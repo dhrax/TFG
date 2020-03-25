@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1020049705951",
+    "firebase_url": "https://trabajo-final-grado.firebaseio.com",
+    "project_id": "trabajo-final-grado",
+    "storage_bucket": "trabajo-final-grado.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020049705951:android:6bdaa1dcd4607759aed26a",
+        "android_client_info": {
+          "package_name": "com.daisa.tfg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1020049705951-ucc4o1m76tl74lsb1fop90165fgq36kl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.daisa.tfg",
+            "certificate_hash": "260bad7dfc30f8e75a5125699d61b1b27a7fcaae"
+          }
+        },
+        {
+          "client_id": "1020049705951-1q8nag9e795gil5tg6d6irke3a67c3dp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0-1yRMQomvK6ojKOoC8i7lI_qqDZLSu4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1020049705951-1q8nag9e795gil5tg6d6irke3a67c3dp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
