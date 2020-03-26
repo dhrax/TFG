@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Juego extends Game {
 
+    //TODO Cargar todo los managers aquí
     SpriteBatch batch;
     @Override
     public void create() {

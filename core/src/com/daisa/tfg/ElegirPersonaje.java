@@ -27,8 +27,8 @@ public class ElegirPersonaje implements Screen, InputProcessor {
         inicializar();
         mostrando = 0;
 
-        flechaDerecha = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("flecha_derecha.png"))));
-        flechaIzquierda = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("flecha_derecha.png"))));
+        flechaDerecha = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("flecha_derecha_prueba.png"))));
+        flechaIzquierda = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("flecha_derecha_prueba.png"))));
 
         flechaIzquierda.flip(true, false);
 
