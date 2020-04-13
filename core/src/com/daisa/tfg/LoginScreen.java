@@ -12,7 +12,10 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
@@ -22,6 +25,8 @@ import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisTextField;
 
+import java.util.Random;
+
 //TODO buscar un tipo de fuente
 //TODO Cuando se tenga el tipo de fuente y la skin, cambiar VisTextField por TextField
 //TODO modularizar
@@ -30,6 +35,16 @@ public class LoginScreen implements Screen {
 	Juego juego;
 	Stage stage;
 
+	Skin skin;
+
+	Label lbNombreJuego;
+	//TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
+	TextField tfNombreUsuario;
+	TextField tfContraseñaUsuario;
+	Label lbOlvidarContrasena;
+	TextButton btRegistro;
+	TextButton btInicioSesion;
+
 	public LoginScreen (Juego juego) {
 		this.juego = juego;
 	}
@@ -37,24 +52,26 @@ public class LoginScreen implements Screen {
 	@Override
 	public void show() {
 
-		if (!VisUI.isLoaded())
-			VisUI.load();
-
 		stage = new Stage();
 
-		VisTable tabla = new VisTable(true);
+		Table tabla = new Table();
 		tabla.setFillParent(true);
 		stage.addActor(tabla);
+
+		juego.manager.cargaSkin();
+		juego.manager.managerJuego.finishLoading();
+
+		skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
 		Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
 
 		//El font scale no debría hacer falta una vez que se haya escogido el tipo de letra
-		VisLabel lbNombreJuego = new VisLabel("NOMBRE_JUEGO");
+		CharSequence nombreJuego = "NOMBRE_JUEGO";
+		lbNombreJuego = new Label(nombreJuego, skin);
 		lbNombreJuego.setFontScale(5, 5);
 
 		//TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
-		final VisTextField tfNombreUsuario  = new VisTextField();
-
+		tfNombreUsuario  = new TextField("", skin);
 		/*
 		Cuando se pulse el VisTextField, aparece una ventana que permite introducir los datos necesarios.
 		Este WorkAround se ha hecho porque, por defecto, si se pulsa en el VisTextField, por la posicion en la que estos se encuentran en esta UI,
@@ -85,7 +102,7 @@ public class LoginScreen implements Screen {
 			}
 		});
 
-		final VisTextField tfContraseñaUsuario  = new VisTextField();
+		tfContraseñaUsuario  = new TextField("", skin);
 		tfContraseñaUsuario.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -107,41 +124,30 @@ public class LoginScreen implements Screen {
 			}
 		});
 
-		VisLabel lbOlvidarContraseña = new VisLabel("Olvidé mi contraseña");
-		lbOlvidarContraseña.setFontScale(2, 2);
-		lbOlvidarContraseña.addListener(new ClickListener(){
+		CharSequence textoLabel = "Olvido mi contrasena";
+		lbOlvidarContrasena = new Label(textoLabel, skin);
+		lbOlvidarContrasena.setFontScale(2, 2);
+		lbOlvidarContrasena.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-
-				juego.setScreen(new ResetContrasena(juego));
-				VisUI.dispose();
-
+				//juego.setScreen(new ResetContrasena(juego));
 			}
 		});
 
 
-		VisTextButton btRegistro = new VisTextButton("Registrarse");
-		btRegistro.getLabel().setFontScale(4, 4);
+		btRegistro = new TextButton("Registrarse", skin);
 		btRegistro.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-
-				juego.setScreen(new RegistroScreen(juego));
-				VisUI.dispose();
-
+				//juego.setScreen(new RegistroScreen(juego));
 			}
 		});
 
-		VisTextButton btInicioSesion = new VisTextButton("Iniciar de Sesion");
-		btInicioSesion.getLabel().setFontScale(4, 4);
+		btInicioSesion = new TextButton("Iniciar de Sesion", skin);
 		btInicioSesion.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-
-				//TODO logica del login
 				juego.setScreen(new MenuPrincipalScreen(juego));
-				VisUI.dispose();
-
 			}
 		});
 
@@ -163,7 +169,7 @@ public class LoginScreen implements Screen {
 		tabla.add();
 
 		tabla.row().padBottom(20).padTop(20);
-		tabla.add(lbOlvidarContraseña).height(80).colspan(3);
+		tabla.add(lbOlvidarContrasena).height(80).colspan(3);
 		tabla.add();
 		tabla.add();
 
@@ -212,6 +218,6 @@ public class LoginScreen implements Screen {
 
 	@Override
 	public void dispose () {
-
+		stage.dispose();
 	}
 }

@@ -15,6 +15,9 @@ android {
     }
     packagingOptions {
         exclude 'META-INF/robovm/ios/robovm.xml'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/INDEX.LIST'
     }
     defaultConfig {
         applicationId "com.daisa.tfg"
@@ -22,6 +25,7 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -47,10 +51,10 @@ task copyAndroidNatives {
             def outputDir = null
             if (jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
             if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
-            if(jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
-            if(jar.name.endsWith("natives-x86_64.jar")) outputDir = file("libs/x86_64")
-            if(jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
-            if(outputDir != null) {
+            if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
+            if (jar.name.endsWith("natives-x86_64.jar")) outputDir = file("libs/x86_64")
+            if (jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
+            if (outputDir != null) {
                 copy {
                     from zipTree(jar)
                     into outputDir
@@ -79,7 +83,7 @@ task run(type: Exec) {
         if (sdkDir) {
             path = sdkDir
         } else {
-            path = "$System.env.ANDROID_HOME"z
+            path = "$System.env.ANDROID_HOME" z
         }
     } else {
         path = "$System.env.ANDROID_HOME"
