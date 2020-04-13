@@ -1,5 +1,4 @@
 buildscript {
-    
 
     repositories {
         mavenLocal()
@@ -10,8 +9,8 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.google.gms:google-services:4.3.3'
         classpath 'com.android.tools.build:gradle:3.5.0'
+        classpath 'com.google.gms:google-services:4.2.0'
     }
 }
 
@@ -49,13 +48,14 @@ project(":core") {
         api "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.0"
         api "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
         api "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
-        
+        //implementation 'com.google.firebase:firebase-database:16.0.4'
+        implementation 'com.google.firebase:firebase-admin:6.8.1'
+        implementation 'com.android.support:multidex:1.0.3'
     }
 }
 
 project(":android") {
     apply plugin: "com.android.application"
-    apply plugin: 'com.google.gms.google-services'
 
     configurations { natives }
 
@@ -79,8 +79,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64"
-
-        implementation 'com.google.firebase:firebase-analytics:17.2.3'
-
     }
+
+    apply plugin: 'com.google.gms.google-services'
 }
