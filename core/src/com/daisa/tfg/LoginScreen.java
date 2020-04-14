@@ -4,9 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -19,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;
@@ -45,8 +48,14 @@ public class LoginScreen implements Screen {
 	TextButton btRegistro;
 	TextButton btInicioSesion;
 
+	TextureRegion fondo;
+
+	OrthographicCamera camara;
+
 	public LoginScreen (Juego juego) {
 		this.juego = juego;
+
+		camara = new OrthographicCamera(0, 0);
 	}
 
 	@Override
@@ -58,20 +67,27 @@ public class LoginScreen implements Screen {
 		tabla.setFillParent(true);
 		stage.addActor(tabla);
 
-		juego.manager.cargaSkin();
-		juego.manager.managerJuego.finishLoading();
+		if(!juego.manager.managerJuego.isLoaded(juego.manager.skin)){
+            juego.manager.cargaSkin();
+            juego.manager.managerJuego.finishLoading();
+        }
 
 		skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
+
+		//TODO cambiar imagen de fondo
+		fondo = new TextureRegion(new Texture("fondo.jpg"));
+		tabla.setBackground(new TiledDrawable(fondo));
 
 		Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
 
 		//El font scale no debría hacer falta una vez que se haya escogido el tipo de letra
+		//TODO buscar tipo de letra nuevo
 		CharSequence nombreJuego = "NOMBRE_JUEGO";
 		lbNombreJuego = new Label(nombreJuego, skin);
 		lbNombreJuego.setFontScale(5, 5);
 
 		//TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
-		tfNombreUsuario  = new TextField("", skin);
+		tfNombreUsuario  = new TextField("Usuario", skin);
 		/*
 		Cuando se pulse el VisTextField, aparece una ventana que permite introducir los datos necesarios.
 		Este WorkAround se ha hecho porque, por defecto, si se pulsa en el VisTextField, por la posicion en la que estos se encuentran en esta UI,
@@ -98,11 +114,11 @@ public class LoginScreen implements Screen {
 						tfNombreUsuario.setText("");
 					}
 				};
-				Gdx.input.getTextInput(textInputListener, "Usuario: ", "", "Nombre de Usuario");
+				Gdx.input.getTextInput(textInputListener, "Usuario: ", tfNombreUsuario.getText(), "Introduce el nombre de usuario");
 			}
 		});
 
-		tfContraseñaUsuario  = new TextField("", skin);
+		tfContraseñaUsuario  = new TextField("Contraseña", skin);
 		tfContraseñaUsuario.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -120,7 +136,7 @@ public class LoginScreen implements Screen {
 						tfContraseñaUsuario.setText("");
 					}
 				};
-				Gdx.input.getTextInput(textInputListener, "Usuario: ", "", "Nombre de Usuario");
+				Gdx.input.getTextInput(textInputListener, "Contraseña: ", tfContraseñaUsuario.getText(), "Introduce la contraseña");
 			}
 		});
 
@@ -133,7 +149,6 @@ public class LoginScreen implements Screen {
 				//juego.setScreen(new ResetContrasena(juego));
 			}
 		});
-
 
 		btRegistro = new TextButton("Registrarse", skin);
 		btRegistro.addListener(new ClickListener(){
@@ -150,7 +165,6 @@ public class LoginScreen implements Screen {
 				juego.setScreen(new MenuPrincipalScreen(juego));
 			}
 		});
-
 
 		tabla.row().padBottom(100).padTop(30);
 		tabla.add(imgLogo).width(200).height(200);
@@ -178,7 +192,6 @@ public class LoginScreen implements Screen {
 		tabla.add().width(200);
 		tabla.add(btInicioSesion).width(700).height(120);
 
-
 		Gdx.input.setInputProcessor(stage);
 	}
 
@@ -186,7 +199,6 @@ public class LoginScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
-
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 

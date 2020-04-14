@@ -1,27 +1,19 @@
 package com.daisa.tfg;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.kotcrab.vis.ui.VisUI;
-import com.kotcrab.vis.ui.widget.VisLabel;
-import com.kotcrab.vis.ui.widget.VisTable;
-import com.kotcrab.vis.ui.widget.VisTextButton;
-import com.kotcrab.vis.ui.widget.VisTextField;
 
-public class MenuPrincipalScreen implements Screen {
+public class ElegirModoScreen implements Screen {
 
-    Juego juego;
     Stage stage;
+    Juego juego;
 
     Skin skin;
 
@@ -29,13 +21,12 @@ public class MenuPrincipalScreen implements Screen {
     TextButton btRanking;
     TextButton btAjustes;
 
-    public MenuPrincipalScreen(Juego juego) {
+    public ElegirModoScreen(Juego juego) {
         this.juego = juego;
     }
 
     @Override
     public void show() {
-
         stage = new Stage();
 
         Table tabla = new Table();
@@ -44,42 +35,38 @@ public class MenuPrincipalScreen implements Screen {
 
         skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
-        Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
-
-        btJugar = new TextButton("Jugar", skin);
+        btJugar = new TextButton("Modo Solitario", skin);
         btJugar.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                juego.setScreen(new ElegirModoScreen(juego));
+                juego.setScreen(new ElegirPersonaje(juego));
             }
         });
 
-        btRanking = new TextButton("Ranking", skin);
+
+        btRanking = new TextButton("Cooperativo", skin);
         btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //TODO solucionar subida de puntuaciones, BBDD...
+                //TODO hacer emparejamiento Bluetooth
             }
         });
 
-        btAjustes = new TextButton("Ajustes", skin);
+        btAjustes = new TextButton("Tutorial", skin);
         btAjustes.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                juego.setScreen(new AjustesScreen(juego));
+                //TODO crear un tutorial
             }
         });
 
         tabla.row().padBottom(30).width(700).height(120);
-        tabla.add();
         tabla.add(btJugar).width(700).height(120);
 
         tabla.row().padBottom(30).width(700).height(120);
-        tabla.add(imgLogo).width(400).height(400);
         tabla.add(btRanking);
 
         tabla.row().padBottom(30).width(700).height(120);
-        tabla.add();
         tabla.add(btAjustes);
 
         Gdx.input.setInputProcessor(stage);
