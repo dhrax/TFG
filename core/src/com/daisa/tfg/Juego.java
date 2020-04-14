@@ -38,11 +38,10 @@ public class Juego extends Game {
         preferencias = new Preferencias();
 
         setScreen(new LoginScreen(this));
-
     }
 
     public FirebaseDatabase conectar() throws IOException {
-        Gdx.app.log("ENVIADO", "Listo para enviar0");
+        Gdx.app.log("ENVIADO", "Listo para enviar");
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(Gdx.files.internal("key.json").read()))
                 .setDatabaseUrl("https://trabajo-final-grado.firebaseio.com/")
