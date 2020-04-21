@@ -14,12 +14,13 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.VisTable;
 
-public class ElegirPersonajee implements Screen {
+public class ElegirPersonajee implements Screen, InputProcessor {
     Texture img;
     Juego juego;
 
@@ -30,17 +31,21 @@ public class ElegirPersonajee implements Screen {
 
     Image img1, img2, img3;
 
+    Image flechaIzquierda, flechaDerecha;
+
+    Rectangle rectFlechaDerecha, rectFlechaIzquierda;
+
     public ElegirPersonajee(Juego juego) {
         img = new Texture("badlogic.jpg");
         this.juego = juego;
         inicializar();
         mostrando = 0;
+
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        img1 = regionArray.get(mostrando);
-        img2 = regionArray.get(mostrando+1);
-        img3 = regionArray.get(mostrando+2);
+        actualizarImagenes();
 
-
+        rectFlechaDerecha = new Rectangle(350, 400, 100, 1000);
+        rectFlechaIzquierda = new Rectangle(950, 400, 100, 1000);
     }
 
     private void inicializar() {
@@ -53,39 +58,16 @@ public class ElegirPersonajee implements Screen {
     public void show() {
 
         Gdx.app.debug("LLAMADA", "SE LLAMA A SHOW");
-        if (!VisUI.isLoaded())
-            VisUI.load();
 
         stage = new Stage();
 
-        VisTable table = new VisTable(true);
+        Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
 
-        Image flechaDerecha = new Image(new Texture(Gdx.files.internal("flecha_derecha.png")));
+        flechaDerecha = new Image(new Texture(Gdx.files.internal("flecha_derecha_prueba.png")));
 
-        flechaDerecha.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if(mostrando > 0){
-                    mostrando--;
-                }
-                Gdx.app.debug("TOCADO", String.valueOf(mostrando));
-            }
-        });
-
-        Image flechaIzquierda = new Image(new Texture(Gdx.files.internal("flecha_derecha.png")));
-
-        flechaIzquierda.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if(mostrando < regionArray.size-3){
-                    mostrando++;
-                }
-                Gdx.app.debug("TOCADO", String.valueOf(mostrando));
-
-            }
-        });
+        flechaIzquierda = new Image(new Texture(Gdx.files.internal("flecha_derecha_prueba.png")));
 
         // Añade filas a la tabla y añade los componentes
         table.add(flechaDerecha);
@@ -94,8 +76,7 @@ public class ElegirPersonajee implements Screen {
         table.add(img3);
         table.add(flechaIzquierda);
 
-
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(this);
     }
 
     @Override
@@ -104,14 +85,9 @@ public class ElegirPersonajee implements Screen {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        actualizarImagenes();
-
         // Pinta la UI en la pantalla
         stage.act(delta);
         stage.draw();
-
-
-
     }
 
     private void actualizarImagenes() {
@@ -148,4 +124,74 @@ public class ElegirPersonajee implements Screen {
         img.dispose();
     }
 
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        Vector3 tmp = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        //cam.unproject(tmp);
+
+        /*Gdx.app.debug("X", String.valueOf(screenX));
+        Gdx.app.debug("Y", String.valueOf(screenY));
+        Gdx.app.debug("INPUT X", String.valueOf(Gdx.input.getX()));
+        Gdx.app.debug("INPUT Y", String.valueOf(Gdx.input.getY()));
+
+        Gdx.app.debug("Y REAL", String.valueOf(Gdx.graphics.getHeight() - tmp.y));*/
+
+
+        if (rectFlechaDerecha.contains(tmp.x, Gdx.graphics.getHeight() - tmp.y)) {
+
+            if(mostrando > 0){
+                mostrando--;
+            }
+            Gdx.app.debug("TOCADO", String.valueOf(mostrando));
+            actualizarImagenes();
+            show();
+
+        }else if(rectFlechaIzquierda.contains(tmp.x, Gdx.graphics.getHeight() - tmp.y)){
+
+            if(mostrando < regionArray.size-1){
+                mostrando++;
+            }
+            Gdx.app.debug("TOCADO", String.valueOf(mostrando));
+            actualizarImagenes();
+            show();
+
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
+    }
 }
