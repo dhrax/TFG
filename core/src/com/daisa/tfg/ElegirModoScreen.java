@@ -39,16 +39,17 @@ public class ElegirModoScreen implements Screen {
         btJugar.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                //TODO quitar si finalmente solo hay un personaje
                 juego.setScreen(new ElegirPersonaje(juego));
             }
         });
-
 
         btRanking = new TextButton("Cooperativo", skin);
         btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 //TODO hacer emparejamiento Bluetooth
+                juego.activarBluetooth();
             }
         });
 

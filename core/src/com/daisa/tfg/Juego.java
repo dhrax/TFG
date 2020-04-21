@@ -17,15 +17,25 @@ public class Juego extends Game {
     SpriteBatch batch;
 
     FirebaseDatabase firebaseDatabase;
-    DatabaseReference databaseReference;
+    DatabaseReference databaseReference, reference;
     Preferencias preferencias;
 
     JuegoAssetManager manager = new JuegoAssetManager();
 
+    // Local variable to hold the callback implementation
+    private MiJuegoCallBack myGameCallback;
+
+    public interface MiJuegoCallBack{
+        void activityForResultBluetooth();
+    }
+
+    public void activarBluetooth(){
+        myGameCallback.activityForResultBluetooth();
+    }
+
     @Override
     public void create() {
         batch = new SpriteBatch();
-
 
         try {
             firebaseDatabase =conectar();
@@ -33,7 +43,12 @@ public class Juego extends Game {
             e.printStackTrace();
         }
 
-        databaseReference = firebaseDatabase.getReference("/Usuario");
+        databaseReference = firebaseDatabase.getReference("Usuario");
+
+        Usuario usuario = new Usuario("Daisa", "root");
+
+        reference = databaseReference.child(usuario.getNombre());
+        reference.setValueAsync(usuario);
 
         preferencias = new Preferencias();
 
@@ -59,5 +74,13 @@ public class Juego extends Game {
     @Override
     public void dispose() {
         manager.managerJuego.dispose();
+    }
+
+    public void setMyGameCallback(MiJuegoCallBack callback) {
+        myGameCallback = callback;
+    }
+
+    public MiJuegoCallBack getMyGameCallback() {
+        return myGameCallback;
     }
 }
