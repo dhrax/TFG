@@ -27,10 +27,18 @@ public class Juego extends Game {
 
     public interface MiJuegoCallBack{
         void activityForResultBluetooth();
+        void conectarDispositivosBluetooth(String nombreDispositivo);
+        void habilitarSerDescubiertoBluetooth();
     }
 
     public void activarBluetooth(){
         myGameCallback.activityForResultBluetooth();
+    }
+    public void conectarBluetooth(String nombreDispositivo){
+        myGameCallback.conectarDispositivosBluetooth(nombreDispositivo);
+    }
+    public void habilitarSerDescubierto(){
+        myGameCallback.habilitarSerDescubiertoBluetooth();
     }
 
     @Override
@@ -38,7 +46,7 @@ public class Juego extends Game {
         batch = new SpriteBatch();
 
         try {
-            firebaseDatabase =conectar();
+            firebaseDatabase = conectarAFirebase();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,7 +63,7 @@ public class Juego extends Game {
         setScreen(new LoginScreen(this));
     }
 
-    public FirebaseDatabase conectar() throws IOException {
+    public FirebaseDatabase conectarAFirebase() throws IOException {
         Gdx.app.log("ENVIADO", "Listo para enviar");
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(Gdx.files.internal("key.json").read()))

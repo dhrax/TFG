@@ -50,12 +50,8 @@ public class LoginScreen implements Screen {
 
 	TextureRegion fondo;
 
-	OrthographicCamera camara;
-
 	public LoginScreen (Juego juego) {
 		this.juego = juego;
-
-		camara = new OrthographicCamera(0, 0);
 	}
 
 	@Override
