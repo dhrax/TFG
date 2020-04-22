@@ -14,15 +14,19 @@ import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.utils.Array;
 
+import java.util.ArrayList;
+
 public class AndroidLauncher extends AndroidApplication implements Juego.MiJuegoCallBack{
 
 	ServicioBluetooth servicioBluetooth;
 	AndroidLauncher androidLauncher;
 	Juego juego;
-	public static Array<String> dispositivosConectados = new Array<>();
+	public static Array<String> nombreDispositivosVisibles = new Array<>();
 	ConectarJugadoresScreen conectarJugadoresScreen;
+	//TODO intentar cambiar ArrayList por Conjunto
+	ArrayList<BluetoothDevice> dispositivosVisibles = new ArrayList<>();
 
-	//TODO Permitir ser descubierto
+	//TODO Permitir ser descubierto (si se tiene que ser host)
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -44,11 +48,29 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	}
 
 	@Override
+	public void conectarDispositivosBluetooth(String nombreDispositivo) {
+
+		int pos = -1;
+		for (BluetoothDevice device : dispositivosVisibles){
+			if(device.getName().equals(nombreDispositivo)){
+				pos = dispositivosVisibles.indexOf(device);
+			}
+		}
+
+		servicioBluetooth.conectarDispositivos(dispositivosVisibles.get(pos));
+	}
+
+	@Override
+	public void habilitarSerDescubiertoBluetooth() {
+		servicioBluetooth.serDescubierto();
+	}
+
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode){
 			case ConstantesBluetooth.SOLICITAR_BLUETOOTH:
 				if(resultCode == Activity.RESULT_OK){
-					servicioBluetooth.descubirBluetooth();
+					servicioBluetooth.descubirDispositivos();
 					Gdx.app.postRunnable(new Runnable() {
 						@Override
 						public void run() {
@@ -81,8 +103,9 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 				if (device != null) {
 					String direccion = device.getName();
 					if(direccion != null) {
-						dispositivosConectados.add(direccion);
-						conectarJugadoresScreen.refrescarLista(dispositivosConectados);
+						nombreDispositivosVisibles.add(direccion);
+						dispositivosVisibles.add(device);
+						conectarJugadoresScreen.refrescarLista(nombreDispositivosVisibles);
 					}
 				}else{
 					Toast.makeText(androidLauncher, "ERROR al recibir nombre del dispositivo", Toast.LENGTH_SHORT).show();
@@ -90,4 +113,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 			}
 		}
 	};
+
+
+
 }

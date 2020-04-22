@@ -1,5 +1,6 @@
 package com.daisa.tfg;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 
+import java.util.ArrayList;
+
 public class ConectarJugadoresScreen implements Screen {
 
     ScrollPane scrollPane;
@@ -25,6 +28,9 @@ public class ConectarJugadoresScreen implements Screen {
     public ConectarJugadoresScreen(Juego juego) {
         this.juego = juego;
         dispositivosConectados = new Array<>();
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
+
+        juego.habilitarSerDescubierto();
     }
 
     @Override
@@ -45,7 +51,17 @@ public class ConectarJugadoresScreen implements Screen {
         list = new List<>(skin);
         list.setItems(dispositivosConectados);
 
-        TextButton button = new TextButton("Refrescar", skin);
+        TextButton button = new TextButton("Conectar", skin);
+        button.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                if(list.getItems().size > 0){
+                    String clickedItem = list.getSelected();
+                    Gdx.app.debug("DISPOSITIVO ESCOGIDO", clickedItem);
+                    juego.conectarBluetooth(clickedItem);
+                }
+
+            }
+        });
 
         scrollPane = new ScrollPane(list);
 
