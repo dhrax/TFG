@@ -27,9 +27,6 @@ public class ConectarJugadoresScreen implements Screen {
         this.juego = juego;
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
         dispositivosConectados = new Array<>();
-
-        juego.habilitarSerDescubierto();
-        juego.descubrirDispositivos();
     }
 
     @Override
@@ -52,9 +49,25 @@ public class ConectarJugadoresScreen implements Screen {
                 if(list.getItems().size > 0){
                     String clickedItem = list.getSelected();
                     Gdx.app.debug("DISPOSITIVO ESCOGIDO", clickedItem);
-                    //juego.conectarBluetooth(clickedItem);
+                    juego.conectarBluetooth(clickedItem);
                 }
 
+            }
+        });
+
+        TextButton hostButton = new TextButton("Host", skin);
+        hostButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                juego.stop();
+                juego.habilitarSerDescubierto();
+                juego.empezarAEscuchar();
+            }
+        });
+        TextButton listenButton = new TextButton("Descubrir", skin);
+        listenButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                juego.stop();
+                juego.descubrirDispositivos();
             }
         });
 
@@ -64,6 +77,10 @@ public class ConectarJugadoresScreen implements Screen {
         tabla.add(scrollPane);
         tabla.row().height(200).width(500);
         tabla.add(button);
+        tabla.row().height(200).width(500);
+        tabla.add(hostButton);
+        tabla.row().height(200).width(500);
+        tabla.add(listenButton);
 
         Gdx.input.setInputProcessor(stage);
 

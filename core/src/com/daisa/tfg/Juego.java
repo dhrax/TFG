@@ -74,12 +74,19 @@ public class Juego extends Game {
         this.nombreDispositivosVisibles = nombreDispositivosVisibles;
     }
 
+    public void empezarAEscuchar() {
+        myGameCallback.empezarAEscucharBluetooth();
+    }
+
     public interface MiJuegoCallBack{
         void activityForResultBluetooth();
         void conectarDispositivosBluetooth(String nombreDispositivo);
         void habilitarSerDescubiertoBluetooth();
         boolean bluetoothEncendido();
         void descubrirDispositivosBluetooth();
+        void empezarAEscucharBluetooth();
+        void write(String string);
+        void stop();
     }
 
     public void activarBluetooth(){
@@ -90,6 +97,13 @@ public class Juego extends Game {
     }
     public void habilitarSerDescubierto(){
         myGameCallback.habilitarSerDescubiertoBluetooth();
+    }
+    public void write(String string){
+        myGameCallback.write(string);
+    }
+
+    public void stop(){
+        myGameCallback.stop();
     }
 
     /*public FirebaseDatabase conectarAFirebase() throws IOException {

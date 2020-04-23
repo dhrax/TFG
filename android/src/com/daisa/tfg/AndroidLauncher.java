@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -42,12 +44,49 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		juego = new Juego();
 		juego.setMyGameCallback(androidLauncher);
 
-		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher);
+		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher, handler);
 		androidLauncher.registerReceiver(mReceiver, filtroEncontradoDispositivo);
 		androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
 
 		initialize(juego, config);
 	}
+
+	private Handler handler  = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg)
+		{
+			switch (msg.what) {
+
+				case ConstantesBluetooth.LEER_MENSAJE:
+					byte[] readBuf = (byte[]) msg.obj;
+					// construct a string from the valid bytes in the buffer
+					String readMessage = new String(readBuf, 0, msg.arg1);
+					Toast.makeText(androidLauncher, readMessage, Toast.LENGTH_SHORT).show();
+					//gdxFragment.getGameInstance().incomingMessage(readMessage);
+					break;
+
+				case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
+					// save the connected device's name
+					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
+					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
+					//gdxFragment.getGameInstance().onConnected(bluetoothService.isHost());
+					break;
+
+				case ConstantesBluetooth.MENSAJE_ESTADO_CAMBIA:
+					if(servicioBluetooth.getEstado() == ServicioBluetooth.EstadosBluetooth.NULO )
+					{
+
+					}
+					break;
+
+				case ConstantesBluetooth.MENSAJE_TOAST:
+					CharSequence content = msg.getData().getString(" toast");
+					Toast.makeText(androidLauncher, content , Toast.LENGTH_SHORT).show();
+					break;
+			}
+		}
+	};
 
 	@Override
 	public void activityForResultBluetooth() {
@@ -81,6 +120,23 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	@Override
 	public void descubrirDispositivosBluetooth() {
 		servicioBluetooth.descubirDispositivos();
+	}
+
+	@Override
+	public void empezarAEscucharBluetooth() {
+		servicioBluetooth.escuchar();
+	}
+
+	@Override
+	public void write(String string) {
+		servicioBluetooth.write(string.getBytes());
+	}
+
+	@Override
+	public void stop() {
+		dispositivosVisibles.clear();
+		nombreDispositivosVisibles.clear();
+		servicioBluetooth.stop();
 	}
 
 	@Override

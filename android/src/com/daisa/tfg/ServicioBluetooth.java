@@ -3,17 +3,21 @@ package com.daisa.tfg;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.badlogic.gdx.Gdx;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+
+import static com.daisa.tfg.ServicioBluetooth.EstadosBluetooth.*;
 
 public class ServicioBluetooth {
 
@@ -22,17 +26,22 @@ public class ServicioBluetooth {
 
     final BluetoothAdapter bluetoothAdapter;
     private final Activity mCurrentActivity;
+    private final Handler mHandler;
     Juego juego;
     AndroidLauncher androidLauncher;
     EstadosBluetooth estado;
+    HiloAceptar hiloAceptar;
     HiloConectar hiloConectar;
     HiloConectado hiloConectado;
 
+    boolean esHost;
 
-    public ServicioBluetooth(Activity activity, Juego juego, AndroidLauncher androidLauncher) {
+
+    public ServicioBluetooth(Activity activity, Juego juego, AndroidLauncher androidLauncher, Handler handler) {
         mCurrentActivity = activity;
         this.juego = juego;
         this.androidLauncher = androidLauncher;
+        mHandler = handler;
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -42,18 +51,16 @@ public class ServicioBluetooth {
             return;
         }
 
-        estado = EstadosBluetooth.NULO;
+        estado = NULO;
     }
 
     public void activarBluetooth() {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             mCurrentActivity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
-
     }
 
     public void descubirDispositivos(){
         Log.d("DEBUG", "ServicioBluetooth::Se comienza a buscar dispositivos");
-        estado = EstadosBluetooth.ESCUCHANDO;
         if(bluetoothAdapter.isDiscovering()){
             bluetoothAdapter.cancelDiscovery();
         }
@@ -66,12 +73,27 @@ public class ServicioBluetooth {
 
     public synchronized void conectarDispositivos(BluetoothDevice bluetoothDevice){
 
+        esHost = false;
+
+        if (estado == CONECTANDO) {
+            if (hiloConectar != null) {
+                hiloConectar.cancel();
+                hiloConectar = null;
+            }
+        }
+
+        if (hiloConectado != null) {
+            hiloConectado.cancel();
+            hiloConectado = null;
+        }
+
         hiloConectar = new HiloConectar(bluetoothDevice);
         hiloConectar.start();
-        setEstado(EstadosBluetooth.CONECTANDO);
+        estado = CONECTANDO;
     }
 
     public void serDescubierto(){
+        Log.d("DEBUG", "ServicioBluetooth::Se permite que se descubra al dispositivo");
         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
         mCurrentActivity.startActivity(intent);
@@ -85,79 +107,169 @@ public class ServicioBluetooth {
         this.estado = estado;
     }
 
+    public void escuchar() {
+        esHost = true;
+
+        // Cancel any thread attempting to make a connection
+        if (hiloConectar != null) {
+            hiloConectar.cancel();
+            hiloConectar = null;
+        }
+
+        // Cancel any thread currently running a connection
+        if (hiloConectado != null) {
+            hiloConectado.cancel();
+            hiloConectado = null;
+        }
+
+        // Start the thread to listen on a BluetoothServerSocket
+        if (hiloAceptar == null) {
+            hiloAceptar = new HiloAceptar();
+            hiloAceptar.start();
+        }
+
+        estado = ESCUCHANDO;
+    }
+
+    private class HiloAceptar extends Thread {
+
+        private final BluetoothServerSocket mmServerSocket;
+
+        public HiloAceptar() {
+            BluetoothServerSocket tmp = null;
+            try {
+
+                tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord("TFG", UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
+
+            } catch (IOException e) {
+                Log.d("DEBUG", "accept() ha fallado");
+            }
+            mmServerSocket = tmp;
+        }
+
+        @Override
+        public void run() {
+            BluetoothSocket socket;
+            while (estado != CONECTADO) {
+                try {
+                    socket = mmServerSocket.accept();
+                } catch (IOException e) {
+                    break;
+                }
+                if (socket != null)
+                {
+                    Log.d("DEBUG", "Connection accepted :" + estado);
+
+                    synchronized (ServicioBluetooth.this) {
+                        switch (estado) {
+                            case ESCUCHANDO:
+                            case CONECTANDO:
+                                // Situation normal. Start the connected thread.
+                                Log.d("DEBUG", "Accept Connecting");
+                                conectado(socket, socket.getRemoteDevice());
+                                break;
+                            case NULO:
+                            case CONECTADO:
+                                try {
+                                    socket.close();
+                                } catch (IOException e) {
+                                }
+                                break;
+                        }
+                    }
+                    try {
+                        mmServerSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+            Log.d("DEBUG", "END mAcceptThread");
+
+        }
+
+        public void cancel() {
+            Log.d("DEBUG", "cancel " + this);
+            try {
+                mmServerSocket.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+
     private class HiloConectar extends Thread {
 
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
-        public HiloConectar(BluetoothDevice bluetoothDevice) {
-            mmDevice = bluetoothDevice;
-            BluetoothSocket tmpSocket = null;
+        public HiloConectar(BluetoothDevice device) {
+            BluetoothSocket tmp = null;
+            mmDevice = device;
 
             try {
-                tmpSocket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
+                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
             } catch (IOException e) {
-                Log.d("ERROR", e.getMessage());
             }
-            mmSocket = tmpSocket;
+            mmSocket = tmp;
         }
 
-        @Override
         public void run() {
-            //Se deja de buscar dispositivos para mejorar el rendimiento
+            Log.i("DEBUG", "BEGIN mConnectThread");
+
+            // Always cancel discovery because it will slow down a connection
             bluetoothAdapter.cancelDiscovery();
 
             try {
                 mmSocket.connect();
-            } catch (IOException e) {
+            } catch (IOException connectException) {
                 try {
-                    Log.d("ERROR", "No se ha podido realizar la conexion Bluetooth");
                     mmSocket.close();
-                } catch (IOException ex) {
-                    Log.d("ERROR", "No se ha podido cerrar el socket");
+                } catch (IOException closeException) {
+                    Log.e("DEBUG", "unable to close() socket during connection failure", closeException);
                 }
-                estado = EstadosBluetooth.NULO;
+                connectionFailed();
                 return;
             }
-            hiloConectar = null;
+
+            synchronized (ServicioBluetooth.this) {
+                hiloConectar = null;
+            }
 
             conectado(mmSocket, mmDevice);
+        }
 
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+            }
         }
     }
 
-    private void conectado(BluetoothSocket mmSocket, BluetoothDevice mmDevice) {
-
-        hiloConectado = new HiloConectado(mmSocket);
-        hiloConectado.start();
-
-        CharSequence connectedDevice = "Connected to " + mmDevice.getName();
-        Toast.makeText(mCurrentActivity, connectedDevice, Toast.LENGTH_SHORT).show();
-
-    }
-
-
-    private class HiloConectado extends Thread{
+    private class HiloConectado extends Thread {
+        private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
-        public HiloConectado(BluetoothSocket mmSocket) {
+        public HiloConectado(BluetoothSocket socket) {
+            mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
             try {
-                tmpIn = mmSocket.getInputStream();
-                tmpOut = mmSocket.getOutputStream();
+                Log.d("DEBUG", "HiloConectado::Se crea el input y el output");
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
             } catch (IOException e) {
-                Log.d("ERROR", "No se han podido generar los I/O streams");
             }
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
 
-        @Override
         public void run() {
+            Log.i("DEBUG", "BEGIN mConnectedThread");
             byte[] buffer = new byte[1024];
             int bytes;
 
@@ -165,24 +277,123 @@ public class ServicioBluetooth {
                 try {
                     bytes = mmInStream.read(buffer);
 
+                    mHandler.obtainMessage(ConstantesBluetooth.LEER_MENSAJE, bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
+                    connectionLost();
                     break;
                 }
             }
         }
 
+        /**
+         * Write to the connected OutStream.
+         *
+         * @param buffer The bytes to write
+         */
         public void write(byte[] buffer) {
             try {
                 mmOutStream.write(buffer);
             } catch (IOException e) {
-                Log.e("ERROR", "Excepcion al escribir el buffer", e);
+                Log.e("DEBUG", "Exception during write", e);
             }
         }
 
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e("DEBUG", "close() of connect socket failed", e);
+            }
+        }
+    }
+
+    private synchronized void conectado(BluetoothSocket socket,
+                                        BluetoothDevice device) {
+        if (hiloConectar != null) {
+            hiloConectar.cancel();
+            hiloConectar = null;
+        }
+
+        if (hiloConectado != null) {
+            hiloConectado.cancel();
+            hiloConectado = null;
+        }
+
+        if (hiloAceptar != null) {
+            hiloAceptar.cancel();
+            hiloAceptar = null;
+        }
+
+        Log.d("DEBUG", "ServicioBluetooth::Dentro de la función conectado");
+
+        Log.d("DEBUG", "ServicioBluetooth::Se crea HiloConectado");
+        hiloConectado = new HiloConectado(socket);
+        hiloConectado.start();
+
+        Log.d("DEBUG", "ServicioBluetooth::Se envia mensaje del dispositivo al que se ha conectado");
+        Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO);
+        Bundle bundle = new Bundle();
+        bundle.putString("nombre de dispositivo", device.getName());
+        msg.setData(bundle);
+        mHandler.sendMessage(msg);
+
+
+        estado = CONECTADO;
+    }
+
+    private void connectionLost() {
+        // Send a failure message back to the Activity
+        Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
+        Bundle bundle = new Bundle();
+        bundle.putString("toast", "Device connection was lost");
+        msg.setData(bundle);
+        mHandler.sendMessage(msg);
+
+        estado = NULO;
+    }
+
+    public void write(byte[] out) {
+        // Create temporary object
+        HiloConectado r;
+        // Synchronize a copy of the ConnectedThread
+        synchronized (this) {
+            if (estado != EstadosBluetooth.CONECTADO) return;
+            r = hiloConectado;
+        }
+        // Perform the write unsynchronized
+        r.write(out);
+    }
+
+    private void connectionFailed() {
+        // Send a failure message back to the Activity
+        Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
+        Bundle bundle = new Bundle();
+        bundle.putString("toast", "Unable to connect device");
+        msg.setData(bundle);
+        mHandler.sendMessage(msg);
+
+        estado = NULO;
+    }
+
+    //TODO LLAMARLO EN EL SCREEN CADA VEZ QUE SE PULSA UN BOTON
+    public synchronized void
+    stop() {
+        if (hiloConectar != null) {
+            hiloConectar.cancel();
+            hiloConectar = null;
+        }
+        if (hiloConectado != null) {
+            hiloConectado.cancel();
+            hiloConectado = null;
+        }
+        if (hiloAceptar != null) {
+            hiloAceptar.cancel();
+            hiloAceptar = null;
+        }
+        estado = NULO;
     }
 
     public enum EstadosBluetooth{
         CONECTADO, CONECTANDO, ESCUCHANDO, NULO
     }
-
 }
