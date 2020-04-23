@@ -35,7 +35,7 @@ public class AjustesScreen implements Screen {
     @Override
     public void show() {
 
-        stage = new Stage();
+        stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
         tabla.setFillParent(true);
@@ -147,7 +147,7 @@ public class AjustesScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        juego.viewport.update(width, height);
     }
 
     @Override

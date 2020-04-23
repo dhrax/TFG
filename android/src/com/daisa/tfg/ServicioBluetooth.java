@@ -20,7 +20,7 @@ public class ServicioBluetooth {
     //TODO terminar estados
     //TODO conectar ambos dispositivos, enviar mensajes entre dispositivos
 
-    private final BluetoothAdapter bluetoothAdapter;
+    final BluetoothAdapter bluetoothAdapter;
     private final Activity mCurrentActivity;
     Juego juego;
     AndroidLauncher androidLauncher;
@@ -46,27 +46,22 @@ public class ServicioBluetooth {
     }
 
     public void activarBluetooth() {
-        if (bluetoothAdapter.isEnabled()) {
-            descubirDispositivos();
-            Gdx.app.postRunnable(new Runnable() {
-                @Override
-                public void run() {
-                    androidLauncher.conectarJugadoresScreen = new ConectarJugadoresScreen(juego);
-                    juego.setScreen(androidLauncher.conectarJugadoresScreen);
-                }
-            });
-        }else{
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             mCurrentActivity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
-        }
+
     }
 
     public void descubirDispositivos(){
-        estado = EstadosBluetooth.CONECTANDO;
+        Log.d("DEBUG", "ServicioBluetooth::Se comienza a buscar dispositivos");
+        estado = EstadosBluetooth.ESCUCHANDO;
         if(bluetoothAdapter.isDiscovering()){
             bluetoothAdapter.cancelDiscovery();
         }
-        bluetoothAdapter.startDiscovery();
+        if(bluetoothAdapter.startDiscovery()){
+            Log.d("DEBUG", "ServicioBluetooth::Busqueda de dispositivos empezada correctamente");
+        }else{
+            Log.d("DEBUG", "ServicioBluetooth::[ERROR] al comenzar la busqueda de dispositivos");
+        }
     }
 
     public synchronized void conectarDispositivos(BluetoothDevice bluetoothDevice){
@@ -78,7 +73,7 @@ public class ServicioBluetooth {
 
     public void serDescubierto(){
         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
+        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
         mCurrentActivity.startActivity(intent);
     }
 

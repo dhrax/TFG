@@ -1,5 +1,6 @@
 package com.daisa.tfg;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -31,12 +32,13 @@ public class MenuPrincipalScreen implements Screen {
 
     public MenuPrincipalScreen(Juego juego) {
         this.juego = juego;
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
     }
 
     @Override
     public void show() {
 
-        stage = new Stage();
+        stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
         tabla.setFillParent(true);
@@ -50,6 +52,7 @@ public class MenuPrincipalScreen implements Screen {
         btJugar.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.debug("DEBUG", "MenuPrincipalScreen::Se crea la Screen ElegirModoScreen");
                 juego.setScreen(new ElegirModoScreen(juego));
             }
         });
@@ -66,6 +69,7 @@ public class MenuPrincipalScreen implements Screen {
         btAjustes.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.debug("DEBUG", "MenuPrincipalScreen::Se crea la Screen AjustesScreen");
                 juego.setScreen(new AjustesScreen(juego));
             }
         });
@@ -90,14 +94,13 @@ public class MenuPrincipalScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Pinta la UI en la pantalla
         stage.act(delta);
         stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-
+        juego.viewport.update(width, height);
     }
 
     @Override
