@@ -22,7 +22,7 @@ public class ResetContrasena implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        juego.viewport.update(width, height);
     }
 
     @Override

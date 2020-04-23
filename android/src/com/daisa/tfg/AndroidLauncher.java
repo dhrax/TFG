@@ -1,12 +1,14 @@
 package com.daisa.tfg;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.badlogic.gdx.Gdx;
@@ -19,10 +21,12 @@ import java.util.ArrayList;
 public class AndroidLauncher extends AndroidApplication implements Juego.MiJuegoCallBack{
 
 	ServicioBluetooth servicioBluetooth;
+	IntentFilter filtroEncontradoDispositivo = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+	IntentFilter filtroModoScan = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+
 	AndroidLauncher androidLauncher;
 	Juego juego;
 	public static Array<String> nombreDispositivosVisibles = new Array<>();
-	ConectarJugadoresScreen conectarJugadoresScreen;
 	//TODO intentar cambiar ArrayList por Conjunto
 	ArrayList<BluetoothDevice> dispositivosVisibles = new ArrayList<>();
 
@@ -38,25 +42,28 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		juego = new Juego();
 		juego.setMyGameCallback(androidLauncher);
 
+		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher);
+		androidLauncher.registerReceiver(mReceiver, filtroEncontradoDispositivo);
+		androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
+
 		initialize(juego, config);
 	}
 
 	@Override
 	public void activityForResultBluetooth() {
-		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher);
 		servicioBluetooth.activarBluetooth();
 	}
 
 	@Override
 	public void conectarDispositivosBluetooth(String nombreDispositivo) {
 
+		Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
 		int pos = -1;
 		for (BluetoothDevice device : dispositivosVisibles){
 			if(device.getName().equals(nombreDispositivo)){
 				pos = dispositivosVisibles.indexOf(device);
 			}
 		}
-
 		servicioBluetooth.conectarDispositivos(dispositivosVisibles.get(pos));
 	}
 
@@ -66,30 +73,38 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	}
 
 	@Override
+	public boolean bluetoothEncendido() {
+		Log.d("DEBUG", "¿Bluetooth Encencido? " + servicioBluetooth.bluetoothAdapter.isEnabled());
+		return servicioBluetooth.bluetoothAdapter.isEnabled();
+	}
+
+	@Override
+	public void descubrirDispositivosBluetooth() {
+		servicioBluetooth.descubirDispositivos();
+	}
+
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch (requestCode){
-			case ConstantesBluetooth.SOLICITAR_BLUETOOTH:
-				if(resultCode == Activity.RESULT_OK){
-					servicioBluetooth.descubirDispositivos();
-					Gdx.app.postRunnable(new Runnable() {
-						@Override
-						public void run() {
-							conectarJugadoresScreen = new ConectarJugadoresScreen(juego);
-							juego.setScreen(conectarJugadoresScreen);
-						}
-					});
-				}else{
-					Toast.makeText(this, "No se puede jugar sin bluetooth", Toast.LENGTH_LONG).show();
-				}
-				break;
+		if (requestCode == ConstantesBluetooth.SOLICITAR_BLUETOOTH) {
+			if (resultCode == Activity.RESULT_OK) {
+				Log.d("DEBUG", "AndroidLauncher::Se permite el Bluetooth");
+				Gdx.app.postRunnable(new Runnable() {
+					@Override
+					public void run() {
+						juego.conectarJugadoresScreen = new ConectarJugadoresScreen(juego);
+						juego.setScreen(juego.conectarJugadoresScreen);
+					}
+				});
+			} else {
+				Log.d("DEBUG", "AndroidLauncher::Bluetooth no activado por lo que no se puede jugar al cooperativo");
+				Toast.makeText(this, "No se puede jugar sin bluetooth", Toast.LENGTH_LONG).show();
+			}
 		}
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-		androidLauncher.registerReceiver(mReceiver, filter);
 	}
 
 	BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -98,17 +113,44 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 			String action = intent.getAction();
 			if (BluetoothDevice.ACTION_FOUND.equals(action))
 			{
+				Log.d("DEBUG", "AndroidLauncher::Se ha encontrado un dispositivo");
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
 				if (device != null) {
-					String direccion = device.getName();
-					if(direccion != null) {
-						nombreDispositivosVisibles.add(direccion);
+					String nombreDispositivo = device.getName();
+					if(nombreDispositivo != null) {
+						Log.d("DEBUG", "AndroidLauncher::Dispositivo añadido a la lista: " + nombreDispositivo);
+						nombreDispositivosVisibles.add(nombreDispositivo);
 						dispositivosVisibles.add(device);
-						conectarJugadoresScreen.refrescarLista(nombreDispositivosVisibles);
+						juego.anadirDispositivo(nombreDispositivosVisibles);
+						juego.refrescarListaDispositivos();
+					}else{
+						Log.d("DEBUG", "AndroidLauncher::Dispositivo sin nombre, no se muestra en la lista");
 					}
 				}else{
-					Toast.makeText(androidLauncher, "ERROR al recibir nombre del dispositivo", Toast.LENGTH_SHORT).show();
+					Log.d("DEBUG", "AndroidLauncher::[ERROR] al recibir nombre del dispositivo");
+				}
+			}
+		}
+	};
+
+	BroadcastReceiver scanRecibidor = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action))
+			{
+				int modoScaneo = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.ERROR);
+				if(modoScaneo == BluetoothAdapter.SCAN_MODE_CONNECTABLE){
+					Log.d("DEBUG", "AndroidLauncher::El dispositivo no se puede descubrir pero puede recibir conexiones");
+				}else if(modoScaneo == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){
+					Log.d("DEBUG", "AndroidLauncher::El dispositivo se puede descubrir");
+				}else if(modoScaneo == BluetoothAdapter.SCAN_MODE_NONE){
+					Log.d("DEBUG", "AndroidLauncher::El dispositivo no se puede descubrir ni recibir conexiones");
+				}else if(modoScaneo == BluetoothAdapter.ERROR){
+					Log.d("DEBUG", "AndroidLauncher::[ERROR] Ha habido un fallo al recoger el modo en el que se encuentra el dispositivo");
+				}else {
+					Log.d("DEBUG", "AndroidLauncher::Opcion no contemplada, valor del modo de scaneo: " + modoScaneo);
 				}
 			}
 		}

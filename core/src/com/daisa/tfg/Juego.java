@@ -1,51 +1,45 @@
 package com.daisa.tfg;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.io.IOException;
 
 public class Juego extends Game {
 
     //TODO Cargar todo los managers aquí
     SpriteBatch batch;
+    ExtendViewport viewport;
+    OrthographicCamera camera;
 
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference databaseReference, reference;
+    //FirebaseDatabase firebaseDatabase;
+    //DatabaseReference databaseReference, reference;
     Preferencias preferencias;
 
     JuegoAssetManager manager = new JuegoAssetManager();
 
     // Local variable to hold the callback implementation
     private MiJuegoCallBack myGameCallback;
+    private Array<String> nombreDispositivosVisibles;
+    public ConectarJugadoresScreen conectarJugadoresScreen;
 
-    public interface MiJuegoCallBack{
-        void activityForResultBluetooth();
-        void conectarDispositivosBluetooth(String nombreDispositivo);
-        void habilitarSerDescubiertoBluetooth();
-    }
-
-    public void activarBluetooth(){
-        myGameCallback.activityForResultBluetooth();
-    }
-    public void conectarBluetooth(String nombreDispositivo){
-        myGameCallback.conectarDispositivosBluetooth(nombreDispositivo);
-    }
-    public void habilitarSerDescubierto(){
-        myGameCallback.habilitarSerDescubiertoBluetooth();
+    public Array<String> getNombreDispositivosVisibles() {
+        return nombreDispositivosVisibles;
     }
 
     @Override
     public void create() {
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
         batch = new SpriteBatch();
+        camera = new OrthographicCamera(1920, 1080);
+        viewport = new ExtendViewport(720, 1280, camera);
 
-        try {
+        /*try {
             firebaseDatabase = conectarAFirebase();
         } catch (IOException e) {
             e.printStackTrace();
@@ -58,13 +52,47 @@ public class Juego extends Game {
         reference = databaseReference.child(usuario.getNombre());
         reference.setValueAsync(usuario);
 
+         */
         preferencias = new Preferencias();
 
         setScreen(new LoginScreen(this));
     }
 
-    public FirebaseDatabase conectarAFirebase() throws IOException {
-        Gdx.app.log("ENVIADO", "Listo para enviar");
+    public boolean estaBluetoothEncencido() {
+        return myGameCallback.bluetoothEncendido();
+    }
+
+    public void descubrirDispositivos() {
+        myGameCallback.descubrirDispositivosBluetooth();
+    }
+
+    public void refrescarListaDispositivos() {
+        conectarJugadoresScreen.refrescarLista(nombreDispositivosVisibles);
+    }
+
+    public void anadirDispositivo(Array<String> nombreDispositivosVisibles) {
+        this.nombreDispositivosVisibles = nombreDispositivosVisibles;
+    }
+
+    public interface MiJuegoCallBack{
+        void activityForResultBluetooth();
+        void conectarDispositivosBluetooth(String nombreDispositivo);
+        void habilitarSerDescubiertoBluetooth();
+        boolean bluetoothEncendido();
+        void descubrirDispositivosBluetooth();
+    }
+
+    public void activarBluetooth(){
+        myGameCallback.activityForResultBluetooth();
+    }
+    public void conectarBluetooth(String nombreDispositivo){
+        myGameCallback.conectarDispositivosBluetooth(nombreDispositivo);
+    }
+    public void habilitarSerDescubierto(){
+        myGameCallback.habilitarSerDescubiertoBluetooth();
+    }
+
+    /*public FirebaseDatabase conectarAFirebase() throws IOException {
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(Gdx.files.internal("key.json").read()))
                 .setDatabaseUrl("https://trabajo-final-grado.firebaseio.com/")
@@ -74,6 +102,7 @@ public class Juego extends Game {
 
         return FirebaseDatabase.getInstance(defaultApp);
     }
+     */
 
     public Preferencias getPreferencias(){
         return this.preferencias;

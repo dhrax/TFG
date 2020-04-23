@@ -1,5 +1,6 @@
 package com.daisa.tfg;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -22,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;
@@ -52,20 +54,23 @@ public class LoginScreen implements Screen {
 
 	public LoginScreen (Juego juego) {
 		this.juego = juego;
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 	}
 
 	@Override
 	public void show() {
 
-		stage = new Stage();
+		stage = new Stage(juego.viewport);
 
 		Table tabla = new Table();
 		tabla.setFillParent(true);
 		stage.addActor(tabla);
 
 		if(!juego.manager.managerJuego.isLoaded(juego.manager.skin)){
+			Gdx.app.debug("DEBUG", "LoginScreen::Skin no cargada");
             juego.manager.cargaSkin();
             juego.manager.managerJuego.finishLoading();
+			Gdx.app.debug("DEBUG", "LoginScreen::Skin terminada de cargar");
         }
 
 		skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
@@ -158,6 +163,7 @@ public class LoginScreen implements Screen {
 		btInicioSesion.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Gdx.app.debug("DEBUG", "LoginScreen::Se crea la Screen MenuPrincipalScreen");
 				juego.setScreen(new MenuPrincipalScreen(juego));
 			}
 		});
@@ -198,7 +204,6 @@ public class LoginScreen implements Screen {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		// Pinta la UI en la pantalla
 		stage.act(delta);
 		stage.draw();
 
@@ -206,7 +211,7 @@ public class LoginScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-
+		juego.viewport.update(width, height);
 	}
 
 	@Override

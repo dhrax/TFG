@@ -14,8 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 
-import java.util.ArrayList;
-
 public class ConectarJugadoresScreen implements Screen {
 
     ScrollPane scrollPane;
@@ -27,20 +25,17 @@ public class ConectarJugadoresScreen implements Screen {
 
     public ConectarJugadoresScreen(Juego juego) {
         this.juego = juego;
-        dispositivosConectados = new Array<>();
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
+        dispositivosConectados = new Array<>();
 
         juego.habilitarSerDescubierto();
+        juego.descubrirDispositivos();
     }
 
     @Override
     public void show() {
 
-        stage = new Stage();
-        if(!juego.manager.managerJuego.isLoaded(juego.manager.skin)){
-            juego.manager.cargaSkin();
-            juego.manager.managerJuego.finishLoading();
-        }
+        stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
         tabla.setFillParent(true);
@@ -57,7 +52,7 @@ public class ConectarJugadoresScreen implements Screen {
                 if(list.getItems().size > 0){
                     String clickedItem = list.getSelected();
                     Gdx.app.debug("DISPOSITIVO ESCOGIDO", clickedItem);
-                    juego.conectarBluetooth(clickedItem);
+                    //juego.conectarBluetooth(clickedItem);
                 }
 
             }
@@ -90,7 +85,6 @@ public class ConectarJugadoresScreen implements Screen {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Pinta la UI en la pantalla
         stage.act(delta);
         stage.draw();
 
@@ -98,7 +92,7 @@ public class ConectarJugadoresScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        juego.viewport.update(width, height);
     }
 
     @Override
