@@ -27,6 +27,7 @@ public class Juego extends Game {
     private MiJuegoCallBack myGameCallback;
     private Array<String> nombreDispositivosVisibles;
     public ConectarJugadoresScreen conectarJugadoresScreen;
+    Juego juego;
 
     public Array<String> getNombreDispositivosVisibles() {
         return nombreDispositivosVisibles;
@@ -53,9 +54,12 @@ public class Juego extends Game {
         reference.setValueAsync(usuario);
 
          */
+
+        juego = this;
         preferencias = new Preferencias();
 
-        setScreen(new LoginScreen(this));
+        setScreen(new LoginScreen(juego));
+        //setScreen(new ElegirPersonajee(this));
     }
 
     public boolean estaBluetoothEncencido() {
@@ -133,5 +137,18 @@ public class Juego extends Game {
 
     public MiJuegoCallBack getMyGameCallback() {
         return myGameCallback;
+    }
+
+
+    public void comenzarPartida(){
+
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+
+                setScreen(new ElegirPersonajee(juego));
+            }
+        });
+
     }
 }

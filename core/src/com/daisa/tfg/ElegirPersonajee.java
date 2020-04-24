@@ -17,11 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
-import com.kotcrab.vis.ui.VisUI;
-import com.kotcrab.vis.ui.widget.VisTable;
 
 public class ElegirPersonajee implements Screen, InputProcessor {
-    Texture img;
     Juego juego;
 
     Array<Image> regionArray = new Array<>();
@@ -29,54 +26,78 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
     Stage stage;
 
-    Image img1, img2, img3;
-
-    Image flechaIzquierda, flechaDerecha;
-
-    Rectangle rectFlechaDerecha, rectFlechaIzquierda;
-
     public ElegirPersonajee(Juego juego) {
-        img = new Texture("badlogic.jpg");
         this.juego = juego;
         inicializar();
         mostrando = 0;
-
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        actualizarImagenes();
 
-        rectFlechaDerecha = new Rectangle(350, 400, 100, 1000);
-        rectFlechaIzquierda = new Rectangle(950, 400, 100, 1000);
+        Gdx.input.setInputProcessor(new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DirectionListener() {
+
+            @Override
+            public void onUp() {
+
+            }
+
+            @Override
+            public void onRight() {
+                if(mostrando > 0)
+                    mostrando--;
+
+                Gdx.app.debug("Desliza Der", String.valueOf(mostrando));
+                show();
+            }
+
+            @Override
+            public void onLeft() {
+                if(mostrando < regionArray.size-1)
+                    mostrando++;
+
+                Gdx.app.debug("Desliza Izq", String.valueOf(mostrando));
+                show();
+            }
+
+            @Override
+            public void onDown() {
+
+            }
+        }));
     }
 
     private void inicializar() {
-        for (int i = 1; i < 7; i++) {
-            regionArray.add(new Image(new Texture(Gdx.files.internal("nave_prueba_" + i + ".png"))));
+        for (int i = 1; i < 11; i++) {
+            regionArray.add(new Image(new Texture(Gdx.files.internal("Personajes/p"+i+".png"))));
         }
     }
 
     @Override
     public void show() {
+        stage = new Stage(juego.viewport);
 
-        Gdx.app.debug("LLAMADA", "SE LLAMA A SHOW");
+        Table tabla = new Table();
+        tabla.setFillParent(true);
+        stage.addActor(tabla);
 
-        stage = new Stage();
+        regionArray.get(mostrando).addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                //SE EMPIEZA LA PARTIDA
+            }
+        });
 
-        Table table = new Table();
-        table.setFillParent(true);
-        stage.addActor(table);
+        if(mostrando > 0){
+            tabla.add(regionArray.get(mostrando - 1)).width(400).height(400).padRight(50);
+        }else{
+            tabla.add().width(400).height(400).padRight(50);
+        }
 
-        flechaDerecha = new Image(new Texture(Gdx.files.internal("flecha_derecha_prueba.png")));
+        tabla.add(regionArray.get(mostrando)).width(700).height(700).padRight(50).padLeft(50);
 
-        flechaIzquierda = new Image(new Texture(Gdx.files.internal("flecha_derecha_prueba.png")));
-
-        // Añade filas a la tabla y añade los componentes
-        table.add(flechaDerecha);
-        table.add(img1);
-        table.add(img2);
-        table.add(img3);
-        table.add(flechaIzquierda);
-
-        Gdx.input.setInputProcessor(this);
+        if(mostrando < regionArray.size-1){
+            tabla.add(regionArray.get(mostrando + 1)).width(400).height(400).padLeft(50);
+        }else{
+            tabla.add().width(400).height(400).padLeft(50);
+        }
     }
 
     @Override
@@ -85,23 +106,13 @@ public class ElegirPersonajee implements Screen, InputProcessor {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Pinta la UI en la pantalla
         stage.act(delta);
         stage.draw();
     }
 
-    private void actualizarImagenes() {
-        Gdx.app.debug("LLAMADA", "SE ACTUALIZAN LAS IMAGENES");
-
-        img1 = regionArray.get(mostrando);
-        img2 = regionArray.get(mostrando+1);
-        img3 = regionArray.get(mostrando+2);
-
-    }
-
     @Override
     public void resize(int width, int height) {
-
+        juego.viewport.update(width, height);
     }
 
     @Override
@@ -121,7 +132,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
     @Override
     public void dispose() {
-        img.dispose();
+
     }
 
     @Override
@@ -141,38 +152,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Vector3 tmp = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-        //cam.unproject(tmp);
-
-        /*Gdx.app.debug("X", String.valueOf(screenX));
-        Gdx.app.debug("Y", String.valueOf(screenY));
-        Gdx.app.debug("INPUT X", String.valueOf(Gdx.input.getX()));
-        Gdx.app.debug("INPUT Y", String.valueOf(Gdx.input.getY()));
-
-        Gdx.app.debug("Y REAL", String.valueOf(Gdx.graphics.getHeight() - tmp.y));*/
-
-
-        if (rectFlechaDerecha.contains(tmp.x, Gdx.graphics.getHeight() - tmp.y)) {
-
-            if(mostrando > 0){
-                mostrando--;
-            }
-            Gdx.app.debug("TOCADO", String.valueOf(mostrando));
-            actualizarImagenes();
-            show();
-
-        }else if(rectFlechaIzquierda.contains(tmp.x, Gdx.graphics.getHeight() - tmp.y)){
-
-            if(mostrando < regionArray.size-1){
-                mostrando++;
-            }
-            Gdx.app.debug("TOCADO", String.valueOf(mostrando));
-            actualizarImagenes();
-            show();
-
-        }
-
-        return true;
+        return false;
     }
 
     @Override
