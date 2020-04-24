@@ -365,7 +365,7 @@ public class ServicioBluetooth {
     }
 
     private void connectionFailed() {
-        // Send a failure message back to the Activity
+
         Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString("toast", "Unable to connect device");

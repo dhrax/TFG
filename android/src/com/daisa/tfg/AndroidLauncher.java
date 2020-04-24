@@ -70,13 +70,14 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					// save the connected device's name
 					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
 					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
-					//gdxFragment.getGameInstance().onConnected(bluetoothService.isHost());
+					//Se elige el personaje
+					juego.comenzarPartida();
 					break;
 
 				case ConstantesBluetooth.MENSAJE_ESTADO_CAMBIA:
 					if(servicioBluetooth.getEstado() == ServicioBluetooth.EstadosBluetooth.NULO )
 					{
-
+						//TODO terminar partida
 					}
 					break;
 
