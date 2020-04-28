@@ -2,18 +2,18 @@ package com.daisa.tfg;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
@@ -21,10 +21,14 @@ import com.badlogic.gdx.utils.Array;
 public class ElegirPersonajee implements Screen, InputProcessor {
     Juego juego;
 
-    Array<Image> regionArray = new Array<>();
+    Array<Image> imagesArray = new Array<>();
+    Array<TextureRegion> regionArray = new Array<>();
     int mostrando;
 
     Stage stage;
+    InputProcessor gestosProcesador;
+    boolean esperando;
+    Skin skin;
 
     public ElegirPersonajee(Juego juego) {
         this.juego = juego;
@@ -32,7 +36,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
         mostrando = 0;
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-        Gdx.input.setInputProcessor(new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DirectionListener() {
+        gestosProcesador =  new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DirectionListener() {
 
             @Override
             public void onUp() {
@@ -50,7 +54,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
             @Override
             public void onLeft() {
-                if(mostrando < regionArray.size-1)
+                if(mostrando < imagesArray.size-1)
                     mostrando++;
 
                 Gdx.app.debug("Desliza Izq", String.valueOf(mostrando));
@@ -61,12 +65,17 @@ public class ElegirPersonajee implements Screen, InputProcessor {
             public void onDown() {
 
             }
-        }));
+        });
+        esperando= false;
     }
 
     private void inicializar() {
         for (int i = 1; i < 11; i++) {
-            regionArray.add(new Image(new Texture(Gdx.files.internal("Personajes/p"+i+".png"))));
+            imagesArray.add(new Image(new Texture(Gdx.files.internal("Personajes/p"+i+".png"))));
+        }
+
+        for(int i = 1; i < 11; i++){
+            regionArray.add(new Sprite(new Texture(Gdx.files.internal("Personajes/p"+i+".png"))));
         }
     }
 
@@ -74,30 +83,81 @@ public class ElegirPersonajee implements Screen, InputProcessor {
     public void show() {
         stage = new Stage(juego.viewport);
 
+
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
+        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
-        regionArray.get(mostrando).addListener(new ClickListener(){
+
+        imagesArray.get(mostrando).addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //SE EMPIEZA LA PARTIDA
+                if(!esperando){
+                    //SE EMPIEZA LA PARTIDA
+                    juego.comenzarPartida();
+                    esperando = true;
+                    show();
+                }
             }
         });
 
         if(mostrando > 0){
-            tabla.add(regionArray.get(mostrando - 1)).width(400).height(400).padRight(50);
+            /*regionArray.get(mostrando - 1).addListener(new ClickListener(){
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    if(!tocando){
+                        Gdx.app.debug("DEBUG", "Se toca la imagen izquierda");
+                        if(mostrando > 0)
+                            mostrando--;
+                        tocando = true;
+                        Gdx.app.debug("DEBUG", "Tocando: " + tocando);
+                        show();
+                    }
+                }
+            });
+
+             */
+            tabla.add(imagesArray.get(mostrando - 1)).width(400).height(400).padRight(50);
         }else{
             tabla.add().width(400).height(400).padRight(50);
         }
 
-        tabla.add(regionArray.get(mostrando)).width(700).height(700).padRight(50).padLeft(50);
+        tabla.add(imagesArray.get(mostrando)).width(700).height(700).padRight(50).padLeft(50);
 
-        if(mostrando < regionArray.size-1){
-            tabla.add(regionArray.get(mostrando + 1)).width(400).height(400).padLeft(50);
+        if(mostrando < imagesArray.size-1){
+            /*regionArray.get(mostrando + 1).addListener(new ClickListener(){
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    if(!tocando) {
+                        Gdx.app.debug("DEBUG", "Se toca la imagen derecha");
+                        if (mostrando < regionArray.size - 1)
+                            mostrando++;
+                        tocando = true;
+                        Gdx.app.debug("DEBUG", "Tocando: " + tocando);
+                        show();
+
+                    }
+                }
+            });
+
+             */
+            tabla.add(imagesArray.get(mostrando + 1)).width(400).height(400).padLeft(50);
         }else{
             tabla.add().width(400).height(400).padLeft(50);
         }
+        Label label = new Label("esperando", skin);
+        if(esperando){
+            tabla.row();
+            tabla.add(label);
+        }
+
+        //fixme solucionar problema para cambiar a las imagenes al rotarlas
+        if(!esperando){
+            InputMultiplexer inputMultiplexer = new InputMultiplexer(gestosProcesador, stage);
+            Gdx.input.setInputProcessor(inputMultiplexer);
+        }
+
     }
 
     @Override
@@ -105,6 +165,11 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if(juego.yoPreparado && juego.rivalPreparado){
+            juego.setScreen(new PartidaMulti(juego, regionArray.get(mostrando)));
+
+        }
 
         stage.act(delta);
         stage.draw();

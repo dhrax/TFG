@@ -92,3 +92,7 @@ task run(type: Exec) {
     def adb = path + "/platform-tools/adb"
     commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.daisa.tfg/com.daisa.tfg.AndroidLauncher'
 }
+
+dependencies {
+    implementation 'com.google.firebase:firebase-firestore:21.4.2'
+}
