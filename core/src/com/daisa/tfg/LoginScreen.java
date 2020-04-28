@@ -55,6 +55,8 @@ public class LoginScreen implements Screen {
 	public LoginScreen (Juego juego) {
 		this.juego = juego;
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		Gdx.app.debug("DEBUG", "Ancho: " + Gdx.graphics.getWidth());
+		Gdx.app.debug("DEBUG", "Alto: " + Gdx.graphics.getHeight());
 	}
 
 	@Override

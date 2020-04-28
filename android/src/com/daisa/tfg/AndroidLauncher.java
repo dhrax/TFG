@@ -17,6 +17,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.utils.Array;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
@@ -32,7 +33,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	//TODO intentar cambiar ArrayList por Conjunto
 	ArrayList<BluetoothDevice> dispositivosVisibles = new ArrayList<>();
 
-	//TODO Permitir ser descubierto (si se tiene que ser host)
+	FirebaseFirestore db;
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -62,8 +63,12 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					byte[] readBuf = (byte[]) msg.obj;
 					// construct a string from the valid bytes in the buffer
 					String readMessage = new String(readBuf, 0, msg.arg1);
-					Toast.makeText(androidLauncher, readMessage, Toast.LENGTH_SHORT).show();
-					//gdxFragment.getGameInstance().incomingMessage(readMessage);
+					if(readMessage.startsWith("true")){
+						Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
+						juego.mensajeRecibido(readMessage);
+					}else{
+						juego.balaRecibida(readMessage);
+					}
 					break;
 
 				case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
@@ -71,13 +76,13 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
 					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
 					//Se elige el personaje
-					juego.comenzarPartida();
+					juego.elegirPersonajes();
 					break;
 
 				case ConstantesBluetooth.MENSAJE_ESTADO_CAMBIA:
 					if(servicioBluetooth.getEstado() == ServicioBluetooth.EstadosBluetooth.NULO )
 					{
-						//TODO terminar partida
+						juego.setScreen(new ElegirModoScreen(juego));
 					}
 					break;
 

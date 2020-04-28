@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Arrays;
 
 public class Juego extends Game {
 
@@ -29,9 +29,15 @@ public class Juego extends Game {
     public ConectarJugadoresScreen conectarJugadoresScreen;
     Juego juego;
 
+    boolean yoPreparado = false, rivalPreparado = false;
+
     public Array<String> getNombreDispositivosVisibles() {
         return nombreDispositivosVisibles;
     }
+
+
+    //TODO igual se podria llamar a metodos del android launcher para firebase
+    //FirebaseFirestore db;
 
     @Override
     public void create() {
@@ -52,14 +58,12 @@ public class Juego extends Game {
 
         reference = databaseReference.child(usuario.getNombre());
         reference.setValueAsync(usuario);
-
          */
 
         juego = this;
         preferencias = new Preferencias();
 
         setScreen(new LoginScreen(juego));
-        //setScreen(new ElegirPersonajee(this));
     }
 
     public boolean estaBluetoothEncencido() {
@@ -82,6 +86,41 @@ public class Juego extends Game {
         myGameCallback.empezarAEscucharBluetooth();
     }
 
+    public void comenzarPartida() {
+        yoPreparado = true;
+        this.write(yoPreparado + ":" + Gdx.graphics.getWidth() + ":" + Gdx.graphics.getHeight());
+
+    }
+
+    public void mensajeRecibido(String readMessage) {
+        Gdx.app.debug("MENSAJE RECIBIDO", readMessage);
+        Gdx.app.debug("MENSAJE RECIBIDO", Arrays.toString(readMessage.split(":")));
+        String[] datosComienzoPartida = readMessage.split(":");
+
+        rivalPreparado = Boolean.parseBoolean(datosComienzoPartida[0]);
+        ConstantesJuego.ALTO_PANTALLA_RIVAL = Integer.parseInt(datosComienzoPartida[1]);
+        ConstantesJuego.ANCHO_PANTALLA_RIVAL = Integer.parseInt(datosComienzoPartida[2]);
+
+        if(ConstantesJuego.ANCHO_PANTALLA < ConstantesJuego.ANCHO_PANTALLA_RIVAL){
+            ConstantesJuego.ANCHO_PANTALLA_MULTI = ConstantesJuego.ANCHO_PANTALLA;
+        }else{
+            ConstantesJuego.ANCHO_PANTALLA_MULTI = ConstantesJuego.ANCHO_PANTALLA_RIVAL;
+        }
+
+        if(ConstantesJuego.ALTO_PANTALLA < ConstantesJuego.ALTO_PANTALLA_RIVAL){
+            ConstantesJuego.ALTO_PANTALLA_MULTI = ConstantesJuego.ALTO_PANTALLA;
+        }else{
+            ConstantesJuego.ALTO_PANTALLA_MULTI = ConstantesJuego.ALTO_PANTALLA_RIVAL;
+        }
+    }
+
+    public void balaRecibida(String readMessage) {
+        String[] mensaje = readMessage.split(":");
+        float balaX = Float.parseFloat(mensaje[0]);
+        Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + ", " + mensaje[1] + "]");
+        Personaje.anadirBalaRival(balaX);
+    }
+
     public interface MiJuegoCallBack{
         void activityForResultBluetooth();
         void conectarDispositivosBluetooth(String nombreDispositivo);
@@ -91,6 +130,7 @@ public class Juego extends Game {
         void empezarAEscucharBluetooth();
         void write(String string);
         void stop();
+
     }
 
     public void activarBluetooth(){
@@ -140,7 +180,7 @@ public class Juego extends Game {
     }
 
 
-    public void comenzarPartida(){
+    public void elegirPersonajes(){
 
         Gdx.app.postRunnable(new Runnable() {
             @Override
