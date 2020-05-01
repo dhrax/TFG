@@ -1,5 +1,6 @@
 package com.daisa.tfg;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -7,10 +8,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.badlogic.gdx.Gdx;
@@ -20,6 +23,8 @@ import com.badlogic.gdx.utils.Array;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class AndroidLauncher extends AndroidApplication implements Juego.MiJuegoCallBack{
 
@@ -31,14 +36,45 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	Juego juego;
 	public static Array<String> nombreDispositivosVisibles = new Array<>();
 	//TODO intentar cambiar ArrayList por Conjunto
-	ArrayList<BluetoothDevice> dispositivosVisibles = new ArrayList<>();
+	Set<BluetoothDevice> SetDispositivosVisibles = new LinkedHashSet<>();
 
 	FirebaseFirestore db;
+
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			// In KITKAT (4.4) and next releases, hide the virtual buttons
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				hideVirtualButtons();
+			}
+		}
+	}
+
+	@TargetApi(19)
+	private void hideVirtualButtons() {
+		getWindow().getDecorView().setSystemUiVisibility(
+				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+						| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+						| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+						| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+						| View.SYSTEM_UI_FLAG_FULLSCREEN
+						| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+	}
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+
+		View decorView = getWindow().getDecorView();
+		// Hide both the navigation bar and the status bar.
+		// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+		// a general rule, you should design your app to hide the status bar whenever you
+		// hide the navigation bar.
+		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(uiOptions);
 
 		androidLauncher = this;
 
@@ -63,7 +99,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					byte[] readBuf = (byte[]) msg.obj;
 					// construct a string from the valid bytes in the buffer
 					String readMessage = new String(readBuf, 0, msg.arg1);
-					if(readMessage.startsWith("true")){
+					if(readMessage.equals("true")){
 						Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
 						juego.mensajeRecibido(readMessage);
 					}else{
@@ -76,18 +112,20 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
 					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
 					//Se elige el personaje
+					Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
 					juego.elegirPersonajes();
 					break;
 
 				case ConstantesBluetooth.MENSAJE_ESTADO_CAMBIA:
 					if(servicioBluetooth.getEstado() == ServicioBluetooth.EstadosBluetooth.NULO )
 					{
-						juego.setScreen(new ElegirModoScreen(juego));
+						Toast.makeText(androidLauncher, "Hay que cambiar pantalla", Toast.LENGTH_SHORT);
+						//juego.setScreen(new ElegirModoScreen(juego));
 					}
 					break;
 
 				case ConstantesBluetooth.MENSAJE_TOAST:
-					CharSequence content = msg.getData().getString(" toast");
+					CharSequence content = msg.getData().getString("toast");
 					Toast.makeText(androidLauncher, content , Toast.LENGTH_SHORT).show();
 					break;
 			}
@@ -103,13 +141,17 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	public void conectarDispositivosBluetooth(String nombreDispositivo) {
 
 		Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
+
+		ArrayList<BluetoothDevice> list = new ArrayList<>();
+		list.addAll(SetDispositivosVisibles);
+
 		int pos = -1;
-		for (BluetoothDevice device : dispositivosVisibles){
+		for (BluetoothDevice device : list){
 			if(device.getName().equals(nombreDispositivo)){
-				pos = dispositivosVisibles.indexOf(device);
+				pos = list.indexOf(device);
 			}
 		}
-		servicioBluetooth.conectarDispositivos(dispositivosVisibles.get(pos));
+		servicioBluetooth.conectarDispositivos(list.get(pos));
 	}
 
 	@Override
@@ -140,7 +182,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 
 	@Override
 	public void stop() {
-		dispositivosVisibles.clear();
+		SetDispositivosVisibles.clear();
 		nombreDispositivosVisibles.clear();
 		servicioBluetooth.stop();
 	}
@@ -181,11 +223,13 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 				if (device != null) {
 					String nombreDispositivo = device.getName();
 					if(nombreDispositivo != null) {
-						Log.d("DEBUG", "AndroidLauncher::Dispositivo añadido a la lista: " + nombreDispositivo);
-						nombreDispositivosVisibles.add(nombreDispositivo);
-						dispositivosVisibles.add(device);
-						juego.anadirDispositivo(nombreDispositivosVisibles);
-						juego.refrescarListaDispositivos();
+						if(SetDispositivosVisibles.add(device)){
+							Log.d("DEBUG", "AndroidLauncher::Dispositivo añadido a la lista: " + nombreDispositivo);
+							nombreDispositivosVisibles.add(nombreDispositivo);
+
+							juego.anadirDispositivo(nombreDispositivosVisibles);
+							juego.refrescarListaDispositivos();
+						}
 					}else{
 						Log.d("DEBUG", "AndroidLauncher::Dispositivo sin nombre, no se muestra en la lista");
 					}

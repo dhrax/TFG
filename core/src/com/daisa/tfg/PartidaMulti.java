@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 public class PartidaMulti implements Screen, InputProcessor {
@@ -16,21 +17,17 @@ public class PartidaMulti implements Screen, InputProcessor {
     Personaje personaje;
     float accelX, accelY;
 
-    Stage stage;
-
     OrthographicCamera camera;
-    ExtendViewport viewport;
 
-    public PartidaMulti(Juego juego, TextureRegion textura) {
+    public PartidaMulti(Juego juego, Array<String> rutaTexturas) {
         this.juego = juego;
-        Gdx.app.debug("DEBUG", "Pantalla: [" + ConstantesJuego.ANCHO_PANTALLA_MULTI + ", " + ConstantesJuego.ALTO_PANTALLA_MULTI + "]");
 
-        camera= new OrthographicCamera(ConstantesJuego.ANCHO_PANTALLA_MULTI, ConstantesJuego.ALTO_PANTALLA_MULTI);
-        viewport = new ExtendViewport(ConstantesJuego.ANCHO_PANTALLA_MULTI, ConstantesJuego.ALTO_PANTALLA_MULTI, ConstantesJuego.ANCHO_PANTALLA_MULTI, ConstantesJuego.ALTO_PANTALLA_MULTI);
-        stage = new Stage(viewport);
+        camera= new OrthographicCamera(ConstantesJuego.ANCHO_UNIDADES, ConstantesJuego.ALTO_UNIDADES);
+        camera.position.set(ConstantesJuego.ANCHO_UNIDADES / 2, ConstantesJuego.ALTO_UNIDADES / 2, 0);
+        camera.update();
 
         Gdx.input.setInputProcessor(this);
-        personaje = new Personaje(textura, 5, 3);
+        personaje = new Personaje(rutaTexturas, 5, ConstantesJuego.PPU / 4);
     }
 
     @Override
@@ -40,39 +37,41 @@ public class PartidaMulti implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        actualizar();
+        actualizar(delta);
         pintar();
     }
 
-    private void actualizar() {
-        moverPersonaje();
+    private void actualizar(float delta) {
+        moverPersonaje(delta);
         moverBalas();
         comprobarColisiones();
         comprobarLimites();
-        //Gdx.app.debug("DEBUG", "Posicion: [" + personaje.getPosicion().x + ", " + personaje.getPosicion().y + "]");
     }
 
-    private void moverPersonaje() {
+    private void moverPersonaje(float delta) {
         accelX = Gdx.input.getAccelerometerX();
-        if(accelX>0){
+        accelY = Gdx.input.getAccelerometerY();
+
+        if(accelX > +1){
             personaje.moverAbajo();
-        }else{
+        }
+        if (accelX < -1){
             personaje.moverArriba();
         }
 
-
-        accelY = Gdx.input.getAccelerometerY();
-        if(accelY>0){
+        if(accelY > +1){
             personaje.moverDerecha();
-        }else{
+        }
+        if (accelY < -1){
             personaje.moverIzquierda();
         }
         //personaje.setPosicion(new Vector2(personaje.getPosicion().x+accelY, personaje.getPosicion().y));
         //personaje.setPosicion(new Vector2(personaje.getPosicion().x, personaje.getPosicion().y-accelX));
+
+        personaje.actualizarFrame(delta);
     }
 
     private void moverBalas() {
-
         for(Bala bala : personaje.balas){
             bala.moverArriba();
         }
@@ -84,33 +83,50 @@ public class PartidaMulti implements Screen, InputProcessor {
 
 
     private void comprobarColisiones() {
+
+        for(Bala bala : personaje.balas){
+            for(Bala balaRival : personaje.balasRival){
+                if(balaRival.rect.overlaps(bala.rect)){
+                    personaje.balasRival.removeValue(balaRival, false);
+                    personaje.balas.removeValue(bala, false);
+                }
+            }
+        }
+
+        for(Bala balaRival : personaje.balasRival){
+            if(balaRival.rect.overlaps(personaje.rect)){
+                personaje.balasRival.removeValue(balaRival, false);
+                personaje.vida--;
+                if(personaje.vida <= 0){
+                    //TODO terminar la partida y añadir el marcador (pantalla de seleccion de personaje)
+                    //TODO notificar de partida acabada al rival
+                }
+            }
+        }
     }
 
     private void comprobarLimites() {
 
         if(personaje.getPosicion().x < 0)
             personaje.getPosicion().x = 0;
-        else if(personaje.getPosicion().x > Gdx.graphics.getWidth())
-            personaje.getPosicion().x = Gdx.graphics.getWidth();
+        if(personaje.getPosicion().x > ConstantesJuego.ANCHO_PANTALLA - personaje.anchoRelativoAspecto)
+            personaje.getPosicion().x = ConstantesJuego.ANCHO_PANTALLA - personaje.anchoRelativoAspecto;
 
         if(personaje.getPosicion().y < 0)
             personaje.getPosicion().y = 0;
-        else if(personaje.getPosicion().y > Gdx.graphics.getHeight())
-            personaje.getPosicion().y = Gdx.graphics.getHeight();
+        if(personaje.getPosicion().y > ConstantesJuego.ALTO_PANTALLA - personaje.altoRelativoAspecto)
+            personaje.getPosicion().y = ConstantesJuego.ALTO_PANTALLA - personaje.altoRelativoAspecto;
 
         for(Bala bala : personaje.balas){
-            if(bala.getPosicion().y >= ConstantesJuego.ALTO_PANTALLA_MULTI){
-                juego.write(bala.posicion.x + ":" + 1);
+            if(bala.getPosicion().y >= ConstantesJuego.ALTO_PANTALLA){
+                float posicionRelativaEnvio = 100 - bala.posicionRelativaPantallaEnvio();
+                juego.write(posicionRelativaEnvio + ":" + 1);
                 personaje.balas.removeValue(bala, false);
             }
-
         }
     }
 
     private void pintar() {
-        camera.update();
-        juego.batch.setProjectionMatrix(camera.combined);
-
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -126,7 +142,7 @@ public class PartidaMulti implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
+        juego.viewport.update(width, height);
     }
 
     @Override

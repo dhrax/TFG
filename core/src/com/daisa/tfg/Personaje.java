@@ -2,6 +2,7 @@ package com.daisa.tfg;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -11,36 +12,69 @@ import com.badlogic.gdx.utils.Array;
 
 public class Personaje{
 
-    TextureRegion aspecto;
-    //Animation animacion
     Rectangle rect;
     int vida;
-    int velocidad;
+    float velocidad;
+    static float velocidadBalas;
     private Vector2 posicion;
     EstadosPersonaje estado;
+    float stateTime;
 
     Array<Bala> balas;
     static Array<Bala> balasRival;
+    static TextureRegion aspectoBala;
+    TextureRegion aspectoActual;
+    Animation animacionDerecha, animacionIzquierda;
+    Array<TextureRegion> texturasDerecha = new Array<>(), texturasIzquierda = new Array<>();
+    TextureRegion aspectoBasico;
+
+    float relacionAspecto;
+    float anchoRelativoAspecto, altoRelativoAspecto;
 
 
-    public Personaje(TextureRegion aspecto, int vida, int velocidad) {
-        this.aspecto = aspecto;
+    public Personaje(Array<String> rutaAnimaciones, int vida, float velocidad) {
         this.vida = vida;
         this.velocidad = velocidad;
+        velocidadBalas = this.velocidad * 3;
+        inicializarAnimaciones(rutaAnimaciones);
 
         estado = EstadosPersonaje.QUIETO;
 
+        relacionAspecto = (float) aspectoBasico.getRegionWidth() / aspectoBasico.getRegionHeight();
+
         posicion = new Vector2(0, 0);
 
-        rect = new Rectangle(posicion.x, posicion.y, aspecto.getRegionWidth() , aspecto.getRegionHeight());
+        anchoRelativoAspecto = ConstantesJuego.PPU * 3 * relacionAspecto;
+        altoRelativoAspecto = ConstantesJuego.PPU * 3;
+
+        rect = new Rectangle(posicion.x, posicion.y, anchoRelativoAspecto , altoRelativoAspecto);
 
         balas = new Array<>();
         balasRival = new Array<>();
+
+        aspectoBala = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/bomb.png"))));
+    }
+
+    private void inicializarAnimaciones(Array<String> rutaAnimaciones) {
+
+        aspectoBasico = new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(0))));
+
+        for(int i = 1; i < 6; i++){
+            if(rutaAnimaciones.get(i).contains("D")){
+                texturasDerecha.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
+            }else{
+                texturasIzquierda.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
+            }
+        }
+
+        animacionDerecha = new Animation(0.75f, texturasDerecha);
+        animacionIzquierda = new Animation(0.75f, texturasIzquierda);
+
     }
 
     public static void anadirBalaRival(float balaX) {
-        TextureRegion aspectoBala = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/bomb.png"))));
-        Bala balaRival = new Bala(new Vector2(balaX, ConstantesJuego.ALTO_PANTALLA_MULTI), aspectoBala, 2);
+        float posicionRelativaRecibido = ConstantesJuego.ANCHO_PANTALLA * balaX / 100;
+        Bala balaRival = new Bala(new Vector2(posicionRelativaRecibido, ConstantesJuego.ALTO_PANTALLA), aspectoBala, velocidadBalas);
         balasRival.add(balaRival);
     }
 
@@ -52,7 +86,7 @@ public class Personaje{
         this.vida = vida;
     }
 
-    public int getVelocidad() {
+    public float getVelocidad() {
         return velocidad;
     }
 
@@ -74,31 +108,52 @@ public class Personaje{
     }
 
     public void moverDerecha(){
+        estado = EstadosPersonaje.DERECHA;
         mover(new Vector2(1, 0));
     }
 
     public void moverIzquierda(){
+        estado = EstadosPersonaje.IZQUIERDA;
         mover(new Vector2(-1, 0));
     }
 
     public void moverArriba(){
+        estado = EstadosPersonaje.QUIETO;
         mover(new Vector2(0, 1));
     }
 
     public void moverAbajo(){
+        estado = EstadosPersonaje.QUIETO;
         mover(new Vector2(0, -1));
     }
+
     public void pintar(SpriteBatch batch){
-        batch.draw(aspecto, getPosicion().x, getPosicion().y);
+        batch.draw(aspectoActual, getPosicion().x, getPosicion().y, anchoRelativoAspecto, altoRelativoAspecto);
     }
 
     public void disparar() {
-        TextureRegion aspectoBala = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/bomb.png"))));
-        Bala bala = new Bala(new Vector2(posicion.x + aspecto.getRegionWidth()/2f, posicion.y), aspectoBala, 2);
+        Bala bala = new Bala(new Vector2(posicion.x + anchoRelativoAspecto/2f, posicion.y + altoRelativoAspecto), aspectoBala, velocidadBalas);
         balas.add(bala);
     }
 
+    public void actualizarFrame(float delta){
+        stateTime += delta;
+        switch (estado){
+
+            case DERECHA:
+                aspectoActual = (TextureRegion) animacionDerecha.getKeyFrame(stateTime, false);
+                break;
+            case IZQUIERDA:
+                aspectoActual = (TextureRegion) animacionIzquierda.getKeyFrame(stateTime, false);
+                break;
+            default:
+                aspectoActual = aspectoBasico;
+                break;
+        }
+
+    }
+
     public enum EstadosPersonaje{
-        ARRIBA, ABAJO, DERECHA, IZQUIERDA, QUIETO, MUERTO
+        DERECHA, IZQUIERDA, QUIETO, MUERTO
     }
 }

@@ -12,13 +12,21 @@ public class Bala {
     TextureRegion aspecto;
     Rectangle rect;
     //Animation animacion;
-    int velocidad;
+    float velocidad;
+    float relacionAspecto;
+    float anchoRelativoAspecto, altoRelativoAspecto;
 
-    public Bala(Vector2 posicion, TextureRegion aspecto, int velocidad) {
+    public Bala(Vector2 posicion, TextureRegion aspecto, float velocidad) {
         this.posicion = posicion;
         this.aspecto = aspecto;
         this.velocidad = velocidad;
-        this.rect = new Rectangle(posicion.x, posicion.y, aspecto.getRegionWidth() , aspecto.getRegionHeight() );
+
+        relacionAspecto = (float) aspecto.getRegionWidth() / aspecto.getRegionHeight();
+
+        anchoRelativoAspecto = ConstantesJuego.PPU * relacionAspecto;
+        altoRelativoAspecto = ConstantesJuego.PPU;
+
+        this.rect = new Rectangle(posicion.x, posicion.y, anchoRelativoAspecto, altoRelativoAspecto);
     }
 
     public void mover(Vector2 direccion) {
@@ -42,7 +50,7 @@ public class Bala {
         mover(new Vector2(0, -1));
     }
     public void pintar(SpriteBatch batch){
-        batch.draw(aspecto, getPosicion().x, getPosicion().y);
+        batch.draw(aspecto, getPosicion().x, getPosicion().y, anchoRelativoAspecto, altoRelativoAspecto);
     }
 
     public Vector2 getPosicion() {
@@ -69,11 +77,19 @@ public class Bala {
         this.rect = rect;
     }
 
-    public int getVelocidad() {
+    public float getVelocidad() {
         return velocidad;
     }
 
     public void setVelocidad(int velocidad) {
         this.velocidad = velocidad;
+    }
+
+    /**
+     * @return porcentaje de la posicion en pantalla
+     */
+    public float posicionRelativaPantallaEnvio() {
+
+        return posicion.x * 100 / ConstantesJuego.ANCHO_PANTALLA;
     }
 }
