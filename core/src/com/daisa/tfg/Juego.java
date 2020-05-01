@@ -87,37 +87,19 @@ public class Juego extends Game {
     }
 
     public void comenzarPartida() {
-        yoPreparado = true;
-        this.write(yoPreparado + ":" + Gdx.graphics.getWidth() + ":" + Gdx.graphics.getHeight());
+        this.write("true");
 
     }
 
     public void mensajeRecibido(String readMessage) {
         Gdx.app.debug("MENSAJE RECIBIDO", readMessage);
-        Gdx.app.debug("MENSAJE RECIBIDO", Arrays.toString(readMessage.split(":")));
-        String[] datosComienzoPartida = readMessage.split(":");
-
-        rivalPreparado = Boolean.parseBoolean(datosComienzoPartida[0]);
-        ConstantesJuego.ALTO_PANTALLA_RIVAL = Integer.parseInt(datosComienzoPartida[1]);
-        ConstantesJuego.ANCHO_PANTALLA_RIVAL = Integer.parseInt(datosComienzoPartida[2]);
-
-        if(ConstantesJuego.ANCHO_PANTALLA < ConstantesJuego.ANCHO_PANTALLA_RIVAL){
-            ConstantesJuego.ANCHO_PANTALLA_MULTI = ConstantesJuego.ANCHO_PANTALLA;
-        }else{
-            ConstantesJuego.ANCHO_PANTALLA_MULTI = ConstantesJuego.ANCHO_PANTALLA_RIVAL;
-        }
-
-        if(ConstantesJuego.ALTO_PANTALLA < ConstantesJuego.ALTO_PANTALLA_RIVAL){
-            ConstantesJuego.ALTO_PANTALLA_MULTI = ConstantesJuego.ALTO_PANTALLA;
-        }else{
-            ConstantesJuego.ALTO_PANTALLA_MULTI = ConstantesJuego.ALTO_PANTALLA_RIVAL;
-        }
+        rivalPreparado = Boolean.parseBoolean(readMessage);
     }
 
     public void balaRecibida(String readMessage) {
         String[] mensaje = readMessage.split(":");
         float balaX = Float.parseFloat(mensaje[0]);
-        Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + ", " + mensaje[1] + "]");
+        Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + "]");
         Personaje.anadirBalaRival(balaX);
     }
 

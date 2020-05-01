@@ -345,7 +345,7 @@ public class ServicioBluetooth {
         // Send a failure message back to the Activity
         Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
         Bundle bundle = new Bundle();
-        bundle.putString("toast", "Device connection was lost");
+        bundle.putString("toast", "El rival se ha desconectado");
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
