@@ -22,7 +22,7 @@ public class PartidaMulti implements Screen, InputProcessor {
     public PartidaMulti(Juego juego, Array<String> rutaTexturas) {
         this.juego = juego;
 
-        camera= new OrthographicCamera(ConstantesJuego.ANCHO_UNIDADES, ConstantesJuego.ALTO_UNIDADES);
+        camera = new OrthographicCamera(ConstantesJuego.ANCHO_UNIDADES, ConstantesJuego.ALTO_UNIDADES);
         camera.position.set(ConstantesJuego.ANCHO_UNIDADES / 2, ConstantesJuego.ALTO_UNIDADES / 2, 0);
         camera.update();
 
@@ -98,8 +98,12 @@ public class PartidaMulti implements Screen, InputProcessor {
                 personaje.balasRival.removeValue(balaRival, false);
                 personaje.vida--;
                 if(personaje.vida <= 0){
-                    //TODO terminar la partida y añadir el marcador (pantalla de seleccion de personaje)
-                    //TODO notificar de partida acabada al rival
+                    //TODO añadir el marcador (pantalla de seleccion de personaje)
+                    //fixme llamar al dispose del rival¿?
+                    Gdx.app.debug("DEBUG", "Me han matado");
+                    juego.write("fin");
+                    juego.setScreen(new ElegirPersonajee(juego));
+                    this.dispose();
                 }
             }
         }
@@ -162,7 +166,7 @@ public class PartidaMulti implements Screen, InputProcessor {
 
     @Override
     public void dispose() {
-
+        personaje.dispose();
     }
 
     @Override

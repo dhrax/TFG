@@ -63,6 +63,8 @@ public class Juego extends Game {
         juego = this;
         preferencias = new Preferencias();
 
+        manager.cargarFuente();
+
         setScreen(new LoginScreen(juego));
     }
 
@@ -101,6 +103,15 @@ public class Juego extends Game {
         float balaX = Float.parseFloat(mensaje[0]);
         Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + "]");
         Personaje.anadirBalaRival(balaX);
+    }
+
+    public void conexionPerdida() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                setScreen(new ElegirModoScreen(juego));
+            }
+        });
     }
 
     public interface MiJuegoCallBack{

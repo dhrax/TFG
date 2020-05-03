@@ -36,7 +36,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
         mostrando = 0;
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-        gestosProcesador =  new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DirectionListener() {
+        gestosProcesador = new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DirectionListener() {
 
             @Override
             public void onUp() {
@@ -45,7 +45,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
             @Override
             public void onRight() {
-                if(mostrando > 0)
+                if (mostrando > 0)
                     mostrando--;
 
                 Gdx.app.debug("Desliza Der", String.valueOf(mostrando));
@@ -54,7 +54,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
             @Override
             public void onLeft() {
-                if(mostrando < regionsPequenos.size-1)
+                if (mostrando < regionsPequenos.size - 1)
                     mostrando++;
 
                 Gdx.app.debug("Desliza Izq", String.valueOf(mostrando));
@@ -66,40 +66,28 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
             }
         });
-        esperando= false;
+        esperando = false;
     }
 
     private void inicializar() {
+        for (int i = 0; i < 10; i++) {
+            regionsPequenos.add(new Image(new Texture(Gdx.files.internal("Personajes/Personajes Peques/p" + (i + 1) + ".png"))));
+            regionGrandes.add(new Image(new Texture(Gdx.files.internal("Personajes/Personajes Grandes/p" + (i + 1) + ".png"))));
+        }
 
-        for(int i = 0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             rutaMatrizAnimaciones.add(new Array<String>());
+            rutaMatrizAnimaciones.get(i).add("Personajes/Animaciones/p" + (i + 1) + ".png");
+            for (int j = 0; j < 3; j++) {
+                rutaMatrizAnimaciones.get(i).add("Personajes/Animaciones/p" + (i + 1) + "D" + (j + 1) + ".png");
+                rutaMatrizAnimaciones.get(i).add("Personajes/Animaciones/p" + (i + 1) + "I" + (j + 1) + ".png");
+            }
         }
-        try{
-            for (int i = 0; i < 10; i++) {
-                regionsPequenos.add(new Image(new Texture(Gdx.files.internal("Personajes/Personajes Peques/p"+ (i + 1) +".png"))));
-            }
-
-            for(int i = 0; i < 10; i++){
-                regionGrandes.add(new Image(new Texture(Gdx.files.internal("Personajes/Personajes Grandes/p"+ (i + 1) +".png"))));
-            }
-
-            for(int i = 0; i < 10; i++){
-                rutaMatrizAnimaciones.get(i).add("Personajes/Animaciones/p" + (i + 1) +".png");
-                for(int j = 0; j < 3; j++){
-                    rutaMatrizAnimaciones.get(i).add("Personajes/Animaciones/p" + (i + 1) + "D" + (j + 1) +".png");
-                    rutaMatrizAnimaciones.get(i).add("Personajes/Animaciones/p" + (i + 1) + "I" + (j + 1) +".png");
-                }
-            }
-        }catch (Exception e){
-            Gdx.app.debug("DEBUG", e.getMessage());
-        }
-
     }
 
     @Override
     public void show() {
         stage = new Stage(juego.viewport);
-
 
         Table tabla = new Table();
         tabla.setFillParent(true);
@@ -107,10 +95,10 @@ public class ElegirPersonajee implements Screen, InputProcessor {
         skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
 
-        regionsPequenos.get(mostrando).addListener(new ClickListener(){
+        regionGrandes.get(mostrando).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(!esperando){
+                if (!esperando) {
                     //SE EMPIEZA LA PARTIDA
                     juego.comenzarPartida();
                     esperando = true;
@@ -120,28 +108,29 @@ public class ElegirPersonajee implements Screen, InputProcessor {
             }
         });
 
-        if(mostrando > 0){
+        if (mostrando > 0) {
             tabla.add(regionsPequenos.get(mostrando - 1)).padRight(50);
-        }else{
+        } else {
             tabla.add().width(400).height(400).padRight(50);
         }
 
-        tabla.add(regionsPequenos.get(mostrando)).padRight(50).padLeft(50);
+        tabla.add(regionGrandes.get(mostrando)).padRight(50).padLeft(50);
 
-        if(mostrando < regionsPequenos.size-1){
-            tabla.add(regionGrandes.get(mostrando + 1)).padLeft(50);
-        }else{
+        if (mostrando < regionsPequenos.size - 1) {
+            tabla.add(regionsPequenos.get(mostrando + 1)).padLeft(50);
+        } else {
             tabla.add().width(400).height(400).padLeft(50);
         }
+
         Label label = new Label("Esperando al rival", skin);
         label.setColor(Color.BLACK);
-        if(esperando){
+        if (esperando) {
             tabla.row();
             tabla.add(label);
         }
 
         //fixme solucionar problema para cambiar a las imagenes al rotarlas
-        if(!esperando){
+        if (!esperando) {
             InputMultiplexer inputMultiplexer = new InputMultiplexer(gestosProcesador, stage);
             Gdx.input.setInputProcessor(inputMultiplexer);
         }
@@ -154,8 +143,12 @@ public class ElegirPersonajee implements Screen, InputProcessor {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if(juego.yoPreparado && juego.rivalPreparado){
+        if (juego.yoPreparado && juego.rivalPreparado) {
+            esperando = false;
+            juego.yoPreparado = false;
+            juego.rivalPreparado = false;
             juego.setScreen(new PartidaMulti(juego, rutaMatrizAnimaciones.get(mostrando)));
+            this.dispose();
         }
 
         stage.act(delta);
@@ -184,7 +177,9 @@ public class ElegirPersonajee implements Screen, InputProcessor {
 
     @Override
     public void dispose() {
-
+        regionsPequenos.clear();
+        regionGrandes.clear();
+        rutaMatrizAnimaciones.clear();
     }
 
     @Override

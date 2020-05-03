@@ -373,6 +373,8 @@ public class ServicioBluetooth {
         mHandler.sendMessage(msg);
 
         estado = NULO;
+
+        juego.conexionPerdida();
     }
 
     //TODO LLAMARLO EN EL SCREEN CADA VEZ QUE SE PULSA UN BOTON
