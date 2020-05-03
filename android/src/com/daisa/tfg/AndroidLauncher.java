@@ -72,8 +72,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
 		// a general rule, you should design your app to hide the status bar whenever you
 		// hide the navigation bar.
-		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_FULLSCREEN;
+		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
 		decorView.setSystemUiVisibility(uiOptions);
 
 		androidLauncher = this;
@@ -99,11 +98,17 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					byte[] readBuf = (byte[]) msg.obj;
 					// construct a string from the valid bytes in the buffer
 					String readMessage = new String(readBuf, 0, msg.arg1);
-					if(readMessage.equals("true")){
-						Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
-						juego.mensajeRecibido(readMessage);
-					}else{
-						juego.balaRecibida(readMessage);
+					switch (readMessage){
+						case "true":
+							Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
+							juego.mensajeRecibido(readMessage);
+							break;
+						case "fin":
+							juego.elegirPersonajes();
+							break;
+						default:
+							juego.balaRecibida(readMessage);
+							break;
 					}
 					break;
 
@@ -114,14 +119,6 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					//Se elige el personaje
 					Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
 					juego.elegirPersonajes();
-					break;
-
-				case ConstantesBluetooth.MENSAJE_ESTADO_CAMBIA:
-					if(servicioBluetooth.getEstado() == ServicioBluetooth.EstadosBluetooth.NULO )
-					{
-						Toast.makeText(androidLauncher, "Hay que cambiar pantalla", Toast.LENGTH_SHORT);
-						//juego.setScreen(new ElegirModoScreen(juego));
-					}
 					break;
 
 				case ConstantesBluetooth.MENSAJE_TOAST:
@@ -142,8 +139,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 
 		Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
 
-		ArrayList<BluetoothDevice> list = new ArrayList<>();
-		list.addAll(SetDispositivosVisibles);
+		ArrayList<BluetoothDevice> list = new ArrayList<>(SetDispositivosVisibles);
 
 		int pos = -1;
 		for (BluetoothDevice device : list){

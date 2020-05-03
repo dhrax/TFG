@@ -69,7 +69,6 @@ public class Personaje{
 
         animacionDerecha = new Animation(0.75f, texturasDerecha);
         animacionIzquierda = new Animation(0.75f, texturasIzquierda);
-
     }
 
     public static void anadirBalaRival(float balaX) {
@@ -150,7 +149,14 @@ public class Personaje{
                 aspectoActual = aspectoBasico;
                 break;
         }
+    }
 
+    public void dispose() {
+        estado = EstadosPersonaje.MUERTO;
+        balas.clear();
+        balasRival.clear();
+        texturasDerecha.clear();
+        texturasIzquierda.clear();
     }
 
     public enum EstadosPersonaje{
