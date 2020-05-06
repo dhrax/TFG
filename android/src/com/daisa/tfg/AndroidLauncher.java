@@ -16,15 +16,24 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.utils.Array;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+
+import static android.content.ContentValues.TAG;
 
 public class AndroidLauncher extends AndroidApplication implements Juego.MiJuegoCallBack{
 
@@ -75,6 +84,10 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
 		decorView.setSystemUiVisibility(uiOptions);
 
+		db = FirebaseFirestore.getInstance();
+
+		anadirDatos();
+
 		androidLauncher = this;
 
 		juego = new Juego();
@@ -85,6 +98,30 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
 
 		initialize(juego, config);
+	}
+
+	private void anadirDatos() {
+
+		Map<String, Object> user = new HashMap<>();
+		user.put("first", "Ada");
+		user.put("last", "Lovelace");
+		user.put("born", 1815);
+
+// Add a new document with a generated ID
+		db.collection("users")
+				.add(user)
+				.addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+					@Override
+					public void onSuccess(DocumentReference documentReference) {
+						Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+					}
+				})
+				.addOnFailureListener(new OnFailureListener() {
+					@Override
+					public void onFailure(@NonNull Exception e) {
+						Log.d(TAG, "Error adding document", e);
+					}
+				});
 	}
 
 	private Handler handler  = new Handler(){
