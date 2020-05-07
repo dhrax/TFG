@@ -37,60 +37,80 @@ import java.util.Random;
 //TODO modularizar
 public class LoginScreen implements Screen {
 
-	Juego juego;
-	Stage stage;
+    Juego juego;
+    Stage stage;
 
-	Skin skin;
+    Skin skin;
 
-	Label lbNombreJuego;
-	//TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
-	TextField tfNombreUsuario;
-	TextField tfContraseñaUsuario;
-	Label lbOlvidarContrasena;
-	TextButton btRegistro;
-	TextButton btInicioSesion;
+    Label lbNombreJuego;
+    Label lbUsuario;
+    Label lbContra;
+    //TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
+    TextField tfNombreUsuario;
+    TextField tfContraseñaUsuario;
+    Label lbOlvidarContrasena;
+    TextButton btRegistro;
+    TextButton btInicioSesion;
 
-	TextureRegion fondo;
+    boolean nombIntroducido = true;
+    boolean contraIntroducida = true;
+    String nombAlmacenado = "";
+    String contraAlmacenada = "";
+    TextureRegion fondo;
 
-	public LoginScreen (Juego juego) {
-		this.juego = juego;
-		Gdx.app.setLogLevel(Application.LOG_DEBUG);
-		Gdx.app.debug("DEBUG", "Ancho: " + Gdx.graphics.getWidth());
-		Gdx.app.debug("DEBUG", "Alto: " + Gdx.graphics.getHeight());
-	}
+    public LoginScreen(Juego juego) {
+        this.juego = juego;
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
+        Gdx.app.debug("DEBUG", "Ancho: " + Gdx.graphics.getWidth());
+        Gdx.app.debug("DEBUG", "Alto: " + Gdx.graphics.getHeight());
+    }
 
-	@Override
-	public void show() {
+    @Override
+    public void show() {
 
-		stage = new Stage(juego.viewport);
+        stage = new Stage(juego.viewport);
 
-		Table tabla = new Table();
-		tabla.setFillParent(true);
-		stage.addActor(tabla);
+        Table tabla = new Table();
+        tabla.setFillParent(true);
+        stage.addActor(tabla);
 
-		if(!juego.manager.managerJuego.isLoaded(juego.manager.skin)){
-			Gdx.app.debug("DEBUG", "LoginScreen::Skin no cargada");
+        if (!juego.manager.managerJuego.isLoaded(juego.manager.skin)) {
+            Gdx.app.debug("DEBUG", "LoginScreen::Skin no cargada");
             juego.manager.cargaSkin();
             juego.manager.managerJuego.finishLoading();
-			Gdx.app.debug("DEBUG", "LoginScreen::Skin terminada de cargar");
+            Gdx.app.debug("DEBUG", "LoginScreen::Skin terminada de cargar");
         }
 
-		skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
+        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
-		//TODO cambiar imagen de fondo
-		fondo = new TextureRegion(new Texture("fondo.jpg"));
-		tabla.setBackground(new TiledDrawable(fondo));
+        //TODO cambiar imagen de fondo
+        fondo = new TextureRegion(new Texture("fondo.jpg"));
+        tabla.setBackground(new TiledDrawable(fondo));
 
-		Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
+        Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
+        Image imgExclamacion = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
+        Image imgExclamacion2 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
 
-		//El font scale no debría hacer falta una vez que se haya escogido el tipo de letra
-		//TODO buscar tipo de letra nuevo
-		CharSequence nombreJuego = "NOMBRE_JUEGO";
-		lbNombreJuego = new Label(nombreJuego, skin);
-		lbNombreJuego.setFontScale(5, 5);
+        //El font scale no debría hacer falta una vez que se haya escogido el tipo de letra
+        //TODO buscar tipo de letra nuevo
+        CharSequence nombreJuego = "NOMBRE_JUEGO";
+        lbNombreJuego = new Label(nombreJuego, skin);
+        lbNombreJuego.setFontScale(5, 5);
 
-		//TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
-		tfNombreUsuario  = new TextField("Usuario", skin);
+        CharSequence nombUsuario = "Usuario";
+        lbUsuario = new Label(nombUsuario, skin);
+        lbUsuario.setFontScale(3, 3);
+
+        CharSequence nombContra = "Contrasena";
+        lbContra = new Label(nombContra, skin);
+        lbContra.setFontScale(3, 3);
+
+        //TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
+
+        tfNombreUsuario = new TextField(nombAlmacenado, skin);
+        nombAlmacenado = "";
+
+
 		/*
 		Cuando se pulse el VisTextField, aparece una ventana que permite introducir los datos necesarios.
 		Este WorkAround se ha hecho porque, por defecto, si se pulsa en el VisTextField, por la posicion en la que estos se encuentran en esta UI,
@@ -100,139 +120,153 @@ public class LoginScreen implements Screen {
 		TODO investigar hacer hacer que la camara permita que el VisTextField se vea:
 			https://stackoverflow.com/questions/32788428/libgdx-textfield-show-keyboard-input-field
 		 */
-		tfNombreUsuario.addListener(new ClickListener(){
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				Input.TextInputListener textInputListener = new Input.TextInputListener()
-				{
-					@Override
-					public void input(String input)
-					{
-						tfNombreUsuario.setText(input);
-					}
+        tfNombreUsuario.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Input.TextInputListener textInputListener = new Input.TextInputListener() {
+                    @Override
+                    public void input(String input) {
+                        tfNombreUsuario.setText(input);
+                    }
 
-					@Override
-					public void canceled()
-					{
-						tfNombreUsuario.setText("");
-					}
-				};
-				Gdx.input.getTextInput(textInputListener, "Usuario: ", tfNombreUsuario.getText(), "Introduce el nombre de usuario");
-			}
-		});
-
-		tfContraseñaUsuario  = new TextField("Contraseña", skin);
-		tfContraseñaUsuario.addListener(new ClickListener(){
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				Input.TextInputListener textInputListener = new Input.TextInputListener()
-				{
-					@Override
-					public void input(String input)
-					{
-						tfContraseñaUsuario.setText(input);
-					}
-
-					@Override
-					public void canceled()
-					{
-						tfContraseñaUsuario.setText("");
-					}
-				};
-				Gdx.input.getTextInput(textInputListener, "Contraseña: ", tfContraseñaUsuario.getText(), "Introduce la contraseña");
-			}
-		});
-
-		CharSequence textoLabel = "Olvido mi contrasena";
-		lbOlvidarContrasena = new Label(textoLabel, skin);
-		lbOlvidarContrasena.setFontScale(2, 2);
-		lbOlvidarContrasena.addListener(new ClickListener(){
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				//juego.setScreen(new ResetContrasena(juego));
-			}
-		});
-
-		btRegistro = new TextButton("Registrarse", skin);
-		btRegistro.addListener(new ClickListener(){
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				//juego.setScreen(new RegistroScreen(juego));
-			}
-		});
-
-		btInicioSesion = new TextButton("Iniciar de Sesion", skin);
-		btInicioSesion.addListener(new ClickListener(){
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				Gdx.app.debug("DEBUG", "LoginScreen::Se crea la Screen MenuPrincipalScreen");
-				juego.setScreen(new MenuPrincipalScreen(juego));
-			}
-		});
-
-		tabla.row().padBottom(100).padTop(30);
-		tabla.add(imgLogo).width(200).height(200);
-		tabla.add(lbNombreJuego).colspan(2).left();
-		tabla.add();
-
-		tabla.row().padBottom(50).padTop(50);
-
-		tabla.add(tfNombreUsuario).width(1200).height(150).colspan(3);
-		tabla.add();
-		tabla.add();
-
-		tabla.row().padBottom(20).padTop(20);
-		tabla.add(tfContraseñaUsuario).width(1200).height(150).colspan(3);
-		tabla.add();
-		tabla.add();
-
-		tabla.row().padBottom(20).padTop(20);
-		tabla.add(lbOlvidarContrasena).height(80).colspan(3);
-		tabla.add();
-		tabla.add();
-
-		tabla.row().padBottom(30);
-		tabla.add(btRegistro).width(700).height(120);
-		tabla.add().width(200);
-		tabla.add(btInicioSesion).width(700).height(120);
-
-		Gdx.input.setInputProcessor(stage);
-	}
+                    @Override
+                    public void canceled() {
+                        tfNombreUsuario.setText("");
+                    }
+                };
+                Gdx.input.getTextInput(textInputListener, "Usuario: ", tfNombreUsuario.getText(), "Introduce el nombre de usuario");
+            }
+        });
 
 
+        tfContraseñaUsuario = new TextField(contraAlmacenada, skin);
+        contraAlmacenada = "";
 
-	@Override
-	public void render(float delta) {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		stage.act(delta);
-		stage.draw();
+        tfContraseñaUsuario.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Input.TextInputListener textInputListener = new Input.TextInputListener() {
+                    @Override
+                    public void input(String input) {
+                        tfContraseñaUsuario.setText(input);
+                    }
 
-	}
+                    @Override
+                    public void canceled() {
+                        tfContraseñaUsuario.setText("");
+                    }
+                };
+                Gdx.input.getTextInput(textInputListener, "Contraseña: ", tfContraseñaUsuario.getText(), "Introduce la contraseña");
+            }
+        });
 
-	@Override
-	public void resize(int width, int height) {
-		juego.viewport.update(width, height);
-	}
+        CharSequence textoLabel = "Olvido mi contrasena";
+        lbOlvidarContrasena = new Label(textoLabel, skin);
+        lbOlvidarContrasena.setFontScale(2, 2);
+        lbOlvidarContrasena.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                //juego.setScreen(new ResetContrasena(juego));
+            }
+        });
 
-	@Override
-	public void pause() {
+        btRegistro = new TextButton("Registrarse", skin);
+        btRegistro.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                //juego.setScreen(new RegistroScreen(juego));
+            }
+        });
 
-	}
+        btInicioSesion = new TextButton("Iniciar de Sesion", skin);
+        btInicioSesion.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                nombIntroducido = !tfNombreUsuario.getText().equals("");
+                contraIntroducida = !tfContraseñaUsuario.getText().equals("");
 
-	@Override
-	public void resume() {
+                if (!(nombIntroducido && contraIntroducida)){
+                    nombAlmacenado = tfNombreUsuario.getText();
+                    contraAlmacenada = tfContraseñaUsuario.getText();
+                    show();
+                }
+                else {
+                    Gdx.app.debug("DEBUG", "LoginScreen::Se crea la Screen MenuPrincipalScreen");
+                    juego.setScreen(new MenuPrincipalScreen(juego));
+                }
+            }
+        });
 
-	}
+        tabla.row().padBottom(100).padTop(30);
+        tabla.add(imgLogo).width(200).height(200);
+        tabla.add(lbNombreJuego).colspan(2).left();
+        tabla.add();
 
-	@Override
-	public void hide() {
+        tabla.row().padBottom(50).padTop(50);
+        tabla.add(lbUsuario).height(100);
+        tabla.add(tfNombreUsuario).width(920).height(150).colspan(2);
+        if (!nombIntroducido) {
+            tabla.add(imgExclamacion).width(150).height(152);
+        } else {
+            tabla.add();
+        }
 
-	}
+        tabla.row().padBottom(20).padTop(20);
+        tabla.add(lbContra).height(100);
+        tabla.add(tfContraseñaUsuario).width(920).height(150).colspan(2);
+        if (!contraIntroducida) {
+            tabla.add(imgExclamacion2).width(150).height(152);
+        } else {
+            tabla.add();
+        }
 
-	@Override
-	public void dispose () {
-		stage.dispose();
-	}
+        tabla.row().padBottom(20).padTop(20);
+        tabla.add(lbOlvidarContrasena).height(80).colspan(3);
+        tabla.add();
+        tabla.add();
+
+        tabla.row().padBottom(30);
+        tabla.add(btRegistro).width(700).height(120);
+        tabla.add().width(200);
+        tabla.add(btInicioSesion).width(700).height(120);
+
+        Gdx.input.setInputProcessor(stage);
+    }
+
+
+    @Override
+    public void render(float delta) {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        stage.act(delta);
+        stage.draw();
+
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        juego.viewport.update(width, height);
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void hide() {
+
+    }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
+    }
 }

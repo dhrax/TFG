@@ -102,14 +102,14 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 
 	private void anadirDatos() {
 
-		Map<String, Object> user = new HashMap<>();
-		user.put("first", "Ada");
-		user.put("last", "Lovelace");
-		user.put("born", 1815);
+		/*Map<String, Object> usuarioNuevo = new HashMap<>();
+		usuarioNuevo.put("first", "Ada");
+		usuarioNuevo.put("last", "Lovelace");
+		usuarioNuevo.put("born", 1815);
 
 // Add a new document with a generated ID
-		db.collection("users")
-				.add(user)
+		db.collection("usuarios")
+				.add(usuarioNuevo)
 				.addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
 					@Override
 					public void onSuccess(DocumentReference documentReference) {
@@ -121,7 +121,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 					public void onFailure(@NonNull Exception e) {
 						Log.d(TAG, "Error adding document", e);
 					}
-				});
+				}*/
 	}
 
 	private Handler handler  = new Handler(){
