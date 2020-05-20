@@ -151,6 +151,8 @@ public class PartidaMulti implements Screen, InputProcessor {
         if(personaje.getPosicion().y > ConstantesJuego.ALTO_PANTALLA - personaje.getAltoRelativoAspecto())
             personaje.getPosicion().y = ConstantesJuego.ALTO_PANTALLA - personaje.getAltoRelativoAspecto();
 
+        personaje.recolocarHitbox();
+
         for(Bala bala : personaje.getBalas()){
             if(bala.getPosicion().y >= ConstantesJuego.ALTO_PANTALLA){
                 float posicionRelativaEnvio = 100 - bala.posicionRelativaPantallaEnvio();
