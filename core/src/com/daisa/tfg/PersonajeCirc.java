@@ -17,6 +17,10 @@ public class PersonajeCirc extends Personaje {
     @Override
     public void mover(Vector2 direccion) {
         getPosicion().add(direccion.scl(getVelocidad()));
+    }
+
+    @Override
+    void recolocarHitbox() {
         circ.setPosition(getPosicion().x + getAnchoRelativoAspecto() / 2, getPosicion().y + getAltoRelativoAspecto() / 2);
     }
 }

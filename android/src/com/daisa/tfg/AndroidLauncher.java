@@ -131,8 +131,6 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 
 		db = FirebaseFirestore.getInstance();
 
-		anadirDatos();
-
 		androidLauncher = this;
 
 		juego = new Juego();
@@ -144,49 +142,6 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 
 		initialize(juego, config);
 	}
-
-
-	private Handler handler  = new Handler(){
-
-		@Override
-		public void handleMessage(Message msg)
-		{
-			switch (msg.what) {
-
-				case ConstantesBluetooth.LEER_MENSAJE:
-					byte[] readBuf = (byte[]) msg.obj;
-					// construct a string from the valid bytes in the buffer
-					String readMessage = new String(readBuf, 0, msg.arg1);
-					switch (readMessage){
-						case "true":
-							Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
-							juego.mensajeRecibido(readMessage);
-							break;
-						case "fin":
-							juego.elegirPersonajes();
-							break;
-						default:
-							juego.balaRecibida(readMessage);
-							break;
-					}
-					break;
-
-				case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
-					// save the connected device's name
-					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
-					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
-					//Se elige el personaje
-					Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
-					juego.elegirPersonajes();
-					break;
-
-				case ConstantesBluetooth.MENSAJE_TOAST:
-					CharSequence content = msg.getData().getString("toast");
-					Toast.makeText(androidLauncher, content , Toast.LENGTH_SHORT).show();
-					break;
-			}
-		}
-	};
 
 	@Override
 	public void activityForResultBluetooth() {

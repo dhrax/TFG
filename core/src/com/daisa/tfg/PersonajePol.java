@@ -7,12 +7,29 @@ import com.badlogic.gdx.utils.Array;
 public class PersonajePol extends Personaje {
     Polygon pol;
     float[] arrVertices;
-    float polPosX, polPosY;
 
 
     public PersonajePol(Array<String> rutaAnimaciones, int idPj, int vida, float velocidad) {
         super(rutaAnimaciones, idPj, vida, velocidad);
-        switch (idPj) {
+
+        getVertices();
+        pol = new Polygon(arrVertices);
+        pol.setPosition(getPosicion().x, getPosicion().y);
+    }
+
+    @Override
+    public void mover(Vector2 direccion) {
+        getPosicion().add(direccion.scl(getVelocidad()));
+    }
+
+    @Override
+    void recolocarHitbox() {
+        getVertices();
+        pol.setVertices(arrVertices);
+    }
+
+    private void getVertices() {
+        switch (getIdPj()) {
             case 1:
             case 2:
             case 3:
@@ -57,32 +74,6 @@ public class PersonajePol extends Personaje {
                 break;
             default:
                 break;
-
         }
-
-        pol = new Polygon(arrVertices);
-        pol.setPosition(getPosicion().x, getPosicion().y);
-        polPosX=0;
-        polPosY=0;
-    }
-
-    @Override
-    public void mover(Vector2 direccion) {
-        getPosicion().add(direccion.scl(getVelocidad()));
-        //fixme textura y hitbox no del todo exactos al llegar a la parte derecha de la pantalla
-        if(getPosicion().x > 0 && getPosicion().x < ConstantesJuego.ANCHO_PANTALLA - getAnchoRelativoAspecto()){
-            for (int i = 0; i < pol.getVertices().length; i+=2) {
-                    pol.getVertices()[i] += direccion.x;
-            }
-            polPosX = getPosicion().x;
-        }
-        if(getPosicion().y > 0 && getPosicion().y < ConstantesJuego.ALTO_PANTALLA - getAltoRelativoAspecto()){
-            for (int i = 1; i < pol.getVertices().length; i+=2) {
-                pol.getVertices()[i] += direccion.y;
-            }
-            polPosY = getPosicion().y;
-        }
-
-        pol.setPosition(polPosX, polPosY);
     }
 }

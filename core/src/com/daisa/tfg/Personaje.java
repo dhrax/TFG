@@ -316,6 +316,8 @@ public abstract class Personaje {
         }
     }
 
+    abstract void recolocarHitbox();
+
     public void dispose() {
         estado = EstadosPersonaje.MUERTO;
         balas.clear();
