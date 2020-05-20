@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "65966793028",
-    "firebase_url": "https://trabajo-final-59072.firebaseio.com",
-    "project_id": "trabajo-final-59072",
-    "storage_bucket": "trabajo-final-59072.appspot.com"
+    "project_number": "100072511290",
+    "firebase_url": "https://prueba1-52481.firebaseio.com",
+    "project_id": "prueba1-52481",
+    "storage_bucket": "prueba1-52481.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:65966793028:android:085d47d0ef6e9fec0ff711",
+        "mobilesdk_app_id": "1:100072511290:android:51038debf799faca1e6203",
         "android_client_info": {
           "package_name": "com.daisa.tfg"
         }
       },
       "oauth_client": [
         {
-          "client_id": "65966793028-g00vbmh9f6i4gm77bdgelu7mqovvb7dj.apps.googleusercontent.com",
+          "client_id": "100072511290-7bl0cqt51mgl8nrkff33d3d3mddfli05.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBRXlNMIVj16pINyo2xRd_MmEf9kIvhbPQ"
+          "current_key": "AIzaSyBCXtIJA0Dz3ZujgZhi0fmV-aG_s-NZePY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "65966793028-g00vbmh9f6i4gm77bdgelu7mqovvb7dj.apps.googleusercontent.com",
+              "client_id": "100072511290-7bl0cqt51mgl8nrkff33d3d3mddfli05.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
