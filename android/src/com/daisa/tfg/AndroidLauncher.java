@@ -1,5 +1,6 @@
 package com.daisa.tfg;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -8,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -44,10 +47,51 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	AndroidLauncher androidLauncher;
 	Juego juego;
 	public static Array<String> nombreDispositivosVisibles = new Array<>();
-	//TODO intentar cambiar ArrayList por Conjunto
 	Set<BluetoothDevice> SetDispositivosVisibles = new LinkedHashSet<>();
 
 	FirebaseFirestore db;
+
+	private Handler handler  = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg)
+		{
+			switch (msg.what) {
+
+				case ConstantesBluetooth.LEER_MENSAJE:
+					byte[] readBuf = (byte[]) msg.obj;
+					// construct a string from the valid bytes in the buffer
+					String readMessage = new String(readBuf, 0, msg.arg1);
+					switch (readMessage){
+						case "true":
+							Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
+							juego.mensajeRecibido(readMessage);
+							break;
+						case "fin":
+							juego.elegirPersonajes();
+							break;
+						default:
+							juego.balaRecibida(readMessage);
+							break;
+					}
+					break;
+
+				case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
+					// save the connected device's name
+					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
+					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
+					//Se elige el personaje
+					Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
+					juego.elegirPersonajes();
+					break;
+
+				case ConstantesBluetooth.MENSAJE_TOAST:
+					CharSequence content = msg.getData().getString("toast");
+					Toast.makeText(androidLauncher, content , Toast.LENGTH_SHORT).show();
+					break;
+			}
+		}
+	};
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
@@ -83,6 +127,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		// hide the navigation bar.
 		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
 		decorView.setSystemUiVisibility(uiOptions);
+		comprobarPermisosLocalizacion();
 
 		db = FirebaseFirestore.getInstance();
 
@@ -100,29 +145,6 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		initialize(juego, config);
 	}
 
-	private void anadirDatos() {
-
-		/*Map<String, Object> usuarioNuevo = new HashMap<>();
-		usuarioNuevo.put("first", "Ada");
-		usuarioNuevo.put("last", "Lovelace");
-		usuarioNuevo.put("born", 1815);
-
-// Add a new document with a generated ID
-		db.collection("usuarios")
-				.add(usuarioNuevo)
-				.addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-					@Override
-					public void onSuccess(DocumentReference documentReference) {
-						Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-					}
-				})
-				.addOnFailureListener(new OnFailureListener() {
-					@Override
-					public void onFailure(@NonNull Exception e) {
-						Log.d(TAG, "Error adding document", e);
-					}
-				}*/
-	}
 
 	private Handler handler  = new Handler(){
 
@@ -220,6 +242,26 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		servicioBluetooth.stop();
 	}
 
+	public void comprobarPermisosLocalizacion() {
+		Log.d("DEBUG", "comprobarPermisos1");
+		if (Build.VERSION.SDK_INT >= 29) {
+			if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+					Log.d("DEBUG", "Ya se tiene permiso de localizacion");
+			} else {
+				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+			}
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			Log.d("DEBUG", "Se ha permitido la localizacion");
+		} else {
+			Toast.makeText(this, "Algunas funcionalidades no estarán disponibles", Toast.LENGTH_SHORT).show();
+		}
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == ConstantesBluetooth.SOLICITAR_BLUETOOTH) {
@@ -294,7 +336,4 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 			}
 		}
 	};
-
-
-
 }

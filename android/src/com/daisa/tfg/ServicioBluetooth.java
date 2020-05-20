@@ -64,10 +64,12 @@ public class ServicioBluetooth {
         if(bluetoothAdapter.isDiscovering()){
             bluetoothAdapter.cancelDiscovery();
         }
+        Log.d("DEBUG", String.valueOf(bluetoothAdapter.isEnabled()));
         if(bluetoothAdapter.startDiscovery()){
             Log.d("DEBUG", "ServicioBluetooth::Busqueda de dispositivos empezada correctamente");
         }else{
             Log.d("DEBUG", "ServicioBluetooth::[ERROR] al comenzar la busqueda de dispositivos");
+
         }
     }
 
@@ -95,7 +97,7 @@ public class ServicioBluetooth {
     public void serDescubierto(){
         Log.d("DEBUG", "ServicioBluetooth::Se permite que se descubra al dispositivo");
         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
         mCurrentActivity.startActivity(intent);
     }
 
@@ -350,6 +352,7 @@ public class ServicioBluetooth {
         mHandler.sendMessage(msg);
 
         estado = NULO;
+        juego.rivalDesconectado();
     }
 
     public void write(byte[] out) {
