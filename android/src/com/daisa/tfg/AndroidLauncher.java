@@ -1,5 +1,6 @@
 package com.daisa.tfg;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -8,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +17,9 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -35,57 +40,9 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 	AndroidLauncher androidLauncher;
 	Juego juego;
 	public static Array<String> nombreDispositivosVisibles = new Array<>();
-	//TODO intentar cambiar ArrayList por Conjunto
 	Set<BluetoothDevice> SetDispositivosVisibles = new LinkedHashSet<>();
 
 	FirebaseFirestore db;
-
-	@Override
-	public void onWindowFocusChanged(boolean hasFocus) {
-		super.onWindowFocusChanged(hasFocus);
-		if (hasFocus) {
-			// In KITKAT (4.4) and next releases, hide the virtual buttons
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-				hideVirtualButtons();
-			}
-		}
-	}
-
-	@TargetApi(19)
-	private void hideVirtualButtons() {
-		getWindow().getDecorView().setSystemUiVisibility(
-				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-						| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-						| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-						| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-						| View.SYSTEM_UI_FLAG_FULLSCREEN
-						| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-	}
-
-	@Override
-	protected void onCreate (Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-
-		View decorView = getWindow().getDecorView();
-		// Hide both the navigation bar and the status bar.
-		// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
-		// a general rule, you should design your app to hide the status bar whenever you
-		// hide the navigation bar.
-		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
-		decorView.setSystemUiVisibility(uiOptions);
-
-		androidLauncher = this;
-
-		juego = new Juego();
-		juego.setMyGameCallback(androidLauncher);
-
-		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher, handler);
-		androidLauncher.registerReceiver(mReceiver, filtroEncontradoDispositivo);
-		androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
-
-		initialize(juego, config);
-	}
 
 	private Handler handler  = new Handler(){
 
@@ -128,6 +85,54 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 			}
 		}
 	};
+
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			// In KITKAT (4.4) and next releases, hide the virtual buttons
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				hideVirtualButtons();
+			}
+		}
+	}
+
+	@TargetApi(19)
+	private void hideVirtualButtons() {
+		getWindow().getDecorView().setSystemUiVisibility(
+				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+						| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+						| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+						| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+						| View.SYSTEM_UI_FLAG_FULLSCREEN
+						| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+	}
+
+	@Override
+	protected void onCreate (Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+
+		View decorView = getWindow().getDecorView();
+		// Hide both the navigation bar and the status bar.
+		// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+		// a general rule, you should design your app to hide the status bar whenever you
+		// hide the navigation bar.
+		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(uiOptions);
+		comprobarPermisosLocalizacion();
+
+		androidLauncher = this;
+
+		juego = new Juego();
+		juego.setMyGameCallback(androidLauncher);
+
+		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher, handler);
+		androidLauncher.registerReceiver(mReceiver, filtroEncontradoDispositivo);
+		androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
+
+		initialize(juego, config);
+	}
 
 	@Override
 	public void activityForResultBluetooth() {
@@ -181,6 +186,26 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 		SetDispositivosVisibles.clear();
 		nombreDispositivosVisibles.clear();
 		servicioBluetooth.stop();
+	}
+
+	public void comprobarPermisosLocalizacion() {
+		Log.d("DEBUG", "comprobarPermisos1");
+		if (Build.VERSION.SDK_INT >= 29) {
+			if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+					Log.d("DEBUG", "Ya se tiene permiso de localizacion");
+			} else {
+				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+			}
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			Log.d("DEBUG", "Se ha permitido la localizacion");
+		} else {
+			Toast.makeText(this, "Algunas funcionalidades no estarán disponibles", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override
@@ -257,7 +282,4 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
 			}
 		}
 	};
-
-
-
 }

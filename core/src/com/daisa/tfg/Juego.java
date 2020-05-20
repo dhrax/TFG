@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
-import java.util.Arrays;
-
 public class Juego extends Game {
 
     //TODO Cargar todo los managers aquí
@@ -100,12 +98,29 @@ public class Juego extends Game {
 
     public void balaRecibida(String readMessage) {
         String[] mensaje = readMessage.split(":");
-        float balaX = Float.parseFloat(mensaje[0]);
-        Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + "]");
-        Personaje.anadirBalaRival(balaX);
+        final float balaX = Float.parseFloat(mensaje[0]);
+        final int idPJRival = Integer.parseInt(mensaje[1]);
+        final int tamanoBala = Integer.parseInt(mensaje[2]);
+        Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + ", " + mensaje[1] +  ", " + mensaje[2] +  "]");
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                Personaje.anadirBalaRival(balaX, idPJRival, tamanoBala);
+            }
+        });
+
     }
 
     public void conexionPerdida() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                setScreen(new ElegirModoScreen(juego));
+            }
+        });
+    }
+
+    public void rivalDesconectado() {
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
@@ -123,7 +138,6 @@ public class Juego extends Game {
         void empezarAEscucharBluetooth();
         void write(String string);
         void stop();
-
     }
 
     public void activarBluetooth(){
@@ -179,7 +193,7 @@ public class Juego extends Game {
             @Override
             public void run() {
 
-                setScreen(new ElegirPersonajee(juego));
+                setScreen(new ElegirPersonaje(juego));
             }
         });
 

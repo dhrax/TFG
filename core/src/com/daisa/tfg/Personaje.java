@@ -6,36 +6,41 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-public class Personaje{
+import java.lang.reflect.Field;
 
-    Rectangle rect;
-    int vida;
-    float velocidad;
-    static float velocidadBalas;
+public abstract class Personaje {
+
+    private int vida;
+    private float velocidad;
+    private static float velocidadBalas;
     private Vector2 posicion;
-    EstadosPersonaje estado;
-    float stateTime;
+    private EstadosPersonaje estado;
+    private float stateTime;
+    private int idPj;
 
-    Array<Bala> balas;
-    static Array<Bala> balasRival;
-    static TextureRegion aspectoBala;
-    TextureRegion aspectoActual;
-    Animation animacionDerecha, animacionIzquierda;
-    Array<TextureRegion> texturasDerecha = new Array<>(), texturasIzquierda = new Array<>();
-    TextureRegion aspectoBasico;
+    private Array<Bala> balas;
+    private static Array<Bala> balasRival;
+    private TextureRegion aspectoActual;
+    private Animation animacionDerecha, animacionIzquierda;
+    private Array<TextureRegion> texturasDerecha = new Array<>(), texturasIzquierda = new Array<>();
+    private TextureRegion aspectoBasico;
+    private TextureRegion hudCorazones;
 
-    float relacionAspecto;
-    float anchoRelativoAspecto, altoRelativoAspecto;
+    private float relacionAspecto;
+    private float anchoRelativoAspecto, altoRelativoAspecto;
 
 
-    public Personaje(Array<String> rutaAnimaciones, int vida, float velocidad) {
+    public Personaje(Array<String> rutaAnimaciones, int idPj, int vida, float velocidad) {
         this.vida = vida;
         this.velocidad = velocidad;
         velocidadBalas = this.velocidad * 3;
+        this.idPj = idPj;
         inicializarAnimaciones(rutaAnimaciones);
 
         estado = EstadosPersonaje.QUIETO;
@@ -47,41 +52,32 @@ public class Personaje{
         anchoRelativoAspecto = ConstantesJuego.PPU * 3 * relacionAspecto;
         altoRelativoAspecto = ConstantesJuego.PPU * 3;
 
-        rect = new Rectangle(posicion.x, posicion.y, anchoRelativoAspecto , altoRelativoAspecto);
-
         balas = new Array<>();
         balasRival = new Array<>();
 
-        aspectoBala = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/bomb.png"))));
+        hudCorazones = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Vidas/corazon.png"))));
     }
 
     private void inicializarAnimaciones(Array<String> rutaAnimaciones) {
 
         aspectoBasico = new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(0))));
 
-        for(int i = 1; i < 6; i++){
-            if(rutaAnimaciones.get(i).contains("D")){
+        for (int i = 1; i < 6; i++) {
+            if (rutaAnimaciones.get(i).contains("D"))
                 texturasDerecha.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
-            }else{
+            else
                 texturasIzquierda.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
-            }
         }
 
         animacionDerecha = new Animation(0.75f, texturasDerecha);
         animacionIzquierda = new Animation(0.75f, texturasIzquierda);
     }
 
-    public static void anadirBalaRival(float balaX) {
-        float posicionRelativaRecibido = ConstantesJuego.ANCHO_PANTALLA * balaX / 100;
-        Bala balaRival = new Bala(new Vector2(posicionRelativaRecibido, ConstantesJuego.ALTO_PANTALLA), aspectoBala, velocidadBalas);
-        balasRival.add(balaRival);
-    }
-
-    public int getvida() {
+    public int getVida() {
         return vida;
     }
 
-    public void setvida(int vida) {
+    public void setVida(int vida) {
         this.vida = vida;
     }
 
@@ -89,8 +85,16 @@ public class Personaje{
         return velocidad;
     }
 
-    public void setVelocidad(int velocidad) {
+    public void setVelocidad(float velocidad) {
         this.velocidad = velocidad;
+    }
+
+    public static float getVelocidadBalas() {
+        return velocidadBalas;
+    }
+
+    public static void setVelocidadBalas(float velocidadBalas) {
+        Personaje.velocidadBalas = velocidadBalas;
     }
 
     public Vector2 getPosicion() {
@@ -101,44 +105,205 @@ public class Personaje{
         this.posicion = posicion;
     }
 
-    public void mover(Vector2 direccion) {
-        posicion.add(direccion.scl(velocidad));
-        rect.setPosition(posicion);
+    public EstadosPersonaje getEstado() {
+        return estado;
     }
 
-    public void moverDerecha(){
+    public void setEstado(EstadosPersonaje estado) {
+        this.estado = estado;
+    }
+
+    public float getStateTime() {
+        return stateTime;
+    }
+
+    public void setStateTime(float stateTime) {
+        this.stateTime = stateTime;
+    }
+
+    public int getIdPj() {
+        return idPj;
+    }
+
+    public void setIdPj(int idPj) {
+        this.idPj = idPj;
+    }
+
+    public Array<Bala> getBalas() {
+        return balas;
+    }
+
+    public void setBalas(Array<Bala> balas) {
+        this.balas = balas;
+    }
+
+    public static Array<Bala> getBalasRival() {
+        return balasRival;
+    }
+
+    public static void setBalasRival(Array<Bala> balasRival) {
+        Personaje.balasRival = balasRival;
+    }
+
+    public TextureRegion getAspectoActual() {
+        return aspectoActual;
+    }
+
+    public void setAspectoActual(TextureRegion aspectoActual) {
+        this.aspectoActual = aspectoActual;
+    }
+
+    public Animation getAnimacionDerecha() {
+        return animacionDerecha;
+    }
+
+    public void setAnimacionDerecha(Animation animacionDerecha) {
+        this.animacionDerecha = animacionDerecha;
+    }
+
+    public Animation getAnimacionIzquierda() {
+        return animacionIzquierda;
+    }
+
+    public void setAnimacionIzquierda(Animation animacionIzquierda) {
+        this.animacionIzquierda = animacionIzquierda;
+    }
+
+    public Array<TextureRegion> getTexturasDerecha() {
+        return texturasDerecha;
+    }
+
+    public void setTexturasDerecha(Array<TextureRegion> texturasDerecha) {
+        this.texturasDerecha = texturasDerecha;
+    }
+
+    public Array<TextureRegion> getTexturasIzquierda() {
+        return texturasIzquierda;
+    }
+
+    public void setTexturasIzquierda(Array<TextureRegion> texturasIzquierda) {
+        this.texturasIzquierda = texturasIzquierda;
+    }
+
+    public TextureRegion getAspectoBasico() {
+        return aspectoBasico;
+    }
+
+    public void setAspectoBasico(TextureRegion aspectoBasico) {
+        this.aspectoBasico = aspectoBasico;
+    }
+
+    public TextureRegion getHudCorazones() {
+        return hudCorazones;
+    }
+
+    public void setHudCorazones(TextureRegion hudCorazones) {
+        this.hudCorazones = hudCorazones;
+    }
+
+    public float getRelacionAspecto() {
+        return relacionAspecto;
+    }
+
+    public void setRelacionAspecto(float relacionAspecto) {
+        this.relacionAspecto = relacionAspecto;
+    }
+
+    public float getAnchoRelativoAspecto() {
+        return anchoRelativoAspecto;
+    }
+
+    public void setAnchoRelativoAspecto(float anchoRelativoAspecto) {
+        this.anchoRelativoAspecto = anchoRelativoAspecto;
+    }
+
+    public float getAltoRelativoAspecto() {
+        return altoRelativoAspecto;
+    }
+
+    public void setAltoRelativoAspecto(float altoRelativoAspecto) {
+        this.altoRelativoAspecto = altoRelativoAspecto;
+    }
+
+    public abstract void mover(Vector2 direccion);
+
+    public void moverDerecha() {
         estado = EstadosPersonaje.DERECHA;
         mover(new Vector2(1, 0));
     }
 
-    public void moverIzquierda(){
+    public void moverIzquierda() {
         estado = EstadosPersonaje.IZQUIERDA;
         mover(new Vector2(-1, 0));
     }
 
-    public void moverArriba(){
+    public void moverArriba() {
         estado = EstadosPersonaje.QUIETO;
         mover(new Vector2(0, 1));
     }
 
-    public void moverAbajo(){
+    public void moverAbajo() {
         estado = EstadosPersonaje.QUIETO;
         mover(new Vector2(0, -1));
     }
 
-    public void pintar(SpriteBatch batch){
-        batch.draw(aspectoActual, getPosicion().x, getPosicion().y, anchoRelativoAspecto, altoRelativoAspecto);
+    public void pintar(SpriteBatch batch) {
+        batch.draw(aspectoActual, posicion.x, posicion.y, anchoRelativoAspecto, altoRelativoAspecto);
     }
 
-    public void disparar() {
-        Bala bala = new Bala(new Vector2(posicion.x + anchoRelativoAspecto/2f, posicion.y + altoRelativoAspecto), aspectoBala, velocidadBalas);
+    public void dibujarHud(SpriteBatch batch) {
+        for (int i = 0; i < vida; i++) {
+            batch.draw(hudCorazones, ConstantesJuego.PPU / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU, ConstantesJuego.PPU);
+        }
+    }
+
+    public void disparar(int tamanoBala) {
+        Vector2 posicionBala = new Vector2(posicion.x + anchoRelativoAspecto / 2f, posicion.y + altoRelativoAspecto);
+        Bala bala = tipoBala(this.idPj, posicionBala, tamanoBala);
         balas.add(bala);
     }
 
-    public void actualizarFrame(float delta){
-        stateTime += delta;
-        switch (estado){
+    public static void anadirBalaRival(float balaX, int idPjRival, int tamanoBala) {
+        Vector2 posicionRelativaRecibido = new Vector2(ConstantesJuego.ANCHO_PANTALLA * balaX / 100, ConstantesJuego.ALTO_PANTALLA);
+        //TODO flippear la imagen en vertical
+        Bala balaRival = tipoBala(idPjRival, posicionRelativaRecibido, tamanoBala);
+        balasRival.add(balaRival);
+    }
 
+    private static Bala tipoBala(int idPj, Vector2 posicionRelativaRecibido, int tamanoBala) {
+        Bala bala;
+        TextureRegion aspecto = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/b" + idPj + ".png"))));
+        switch (idPj) {
+            //Balas con forma rectangular
+            case 1:
+            case 4:
+            case 7:
+                bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                break;
+            //Balas con forma circular
+            case 2:
+                bala = new BalaCirc(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                break;
+            //Balas con forma poligonal
+            case 3:
+            case 5:
+            case 6:
+            case 8:
+            case 9:
+            case 10:
+                bala = new BalaPol(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                break;
+            default:
+                aspecto = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/b1.png"))));
+                bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                break;
+        }
+        return bala;
+    }
+
+    public void actualizarFrame(float delta) {
+        stateTime += delta;
+        switch (estado) {
             case DERECHA:
                 aspectoActual = (TextureRegion) animacionDerecha.getKeyFrame(stateTime, false);
                 break;
@@ -159,7 +324,105 @@ public class Personaje{
         texturasIzquierda.clear();
     }
 
-    public enum EstadosPersonaje{
+
+    public enum EstadosPersonaje {
         DERECHA, IZQUIERDA, QUIETO, MUERTO
+    }
+
+    void moverBalas(Array<Bala> balas) {
+        for (Bala bala : balas) {
+            switch (bala.getIdPj()) {
+                case 1:
+                case 4:
+                case 7:
+                    bala.getPosicion().add(new Vector2(0, 1).scl(bala.getVelocidad()));
+                    Rectangle rect = bala.obtenerRectanguloBala(bala);
+                    rect.setPosition(bala.getPosicion());
+                    break;
+
+                case 2:
+                    bala.getPosicion().add(new Vector2(0, 1).scl(bala.getVelocidad()));
+                    Circle circ = bala.obtenerCirculoBala(bala);
+                    circ.setPosition(bala.getPosicion().x + bala.getAnchoRelativoAspecto() / 2, bala.getPosicion().y + bala.getAltoRelativoAspecto() / 2);
+                    break;
+                case 3:
+                case 5:
+                case 6:
+                case 8:
+                case 9:
+                case 10:
+                    bala.getPosicion().add(new Vector2(0, 1).scl(bala.getVelocidad()));
+                    Polygon p = bala.obtenerPoligonoBala(bala);
+                    for(int i = 0; i < p.getVertices().length; i++){
+                        if(i%2!=0){
+                            p.getVertices()[i] += bala.getVelocidad();
+                        }
+                    }
+                    p.setPosition(bala.getPosicion().x, bala.getPosicion().y);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public void moverBalasRival(Array<Bala> balasRival) {
+        for (Bala bala : balasRival) {
+            switch (bala.getIdPj()) {
+                case 1:
+                case 4:
+                case 7:
+                    bala.getPosicion().add(new Vector2(0, -1).scl(bala.getVelocidad()));
+                    Rectangle rect = bala.obtenerRectanguloBala(bala);
+                    rect.setPosition(bala.getPosicion());
+                    break;
+
+                case 2:
+                    bala.getPosicion().add(new Vector2(0, -1).scl(bala.getVelocidad()));
+                    Circle circ = bala.obtenerCirculoBala(bala);
+                    circ.setPosition(bala.getPosicion().x + bala.getAnchoRelativoAspecto() / 2, bala.getPosicion().y + bala.getAltoRelativoAspecto() / 2);
+                    break;
+                case 3:
+                case 5:
+                case 6:
+                case 8:
+                case 9:
+                case 10:
+                    bala.getPosicion().add(new Vector2(0, -1).scl(bala.getVelocidad()));
+                    Polygon p = bala.obtenerPoligonoBala(bala);
+                    for(int i = 0; i < p.getVertices().length; i++){
+                        if(i%2!=0){
+                            p.getVertices()[i] -= bala.getVelocidad();
+                        }
+                    }
+                    p.setPosition(bala.getPosicion().x, bala.getPosicion().y);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    Polygon obtenerPoligono(Personaje personaje) {
+        Field field;
+        try {
+            field = personaje.getClass().getDeclaredField("pol");
+            field.setAccessible(true);
+            return (Polygon) field.get(personaje);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Gdx.app.debug("DEBUG", "[ERROR Poligono] " + e.getMessage());
+        }
+        return null;
+    }
+
+    Circle obtenerCirculo(Personaje personaje) {
+        try {
+            Field field = personaje.getClass().getDeclaredField("circ");
+            field.setAccessible(true);
+            return (Circle) field.get(personaje);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Gdx.app.debug("DEBUG", "[ERROR Circulo]" + e.getMessage());
+        }
+        return null;
     }
 }

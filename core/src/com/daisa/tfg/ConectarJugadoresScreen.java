@@ -43,6 +43,7 @@ public class ConectarJugadoresScreen implements Screen {
         list = new List<>(skin);
         list.setItems(dispositivosConectados);
 
+
         TextButton button = new TextButton("Conectar", skin);
         button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {

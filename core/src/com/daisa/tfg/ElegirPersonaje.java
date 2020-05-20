@@ -17,7 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 
-public class ElegirPersonajee implements Screen, InputProcessor {
+public class ElegirPersonaje implements Screen, InputProcessor {
     Juego juego;
 
     Array<Image> regionsPequenos = new Array<>();
@@ -30,7 +30,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
     Skin skin;
     Array<Array<String>> rutaMatrizAnimaciones = new Array<>();
 
-    public ElegirPersonajee(Juego juego) {
+    public ElegirPersonaje(Juego juego) {
         this.juego = juego;
         inicializar();
         mostrando = 0;
@@ -133,6 +133,8 @@ public class ElegirPersonajee implements Screen, InputProcessor {
         if (!esperando) {
             InputMultiplexer inputMultiplexer = new InputMultiplexer(gestosProcesador, stage);
             Gdx.input.setInputProcessor(inputMultiplexer);
+        }else{
+            Gdx.input.setInputProcessor(null);
         }
 
     }
@@ -147,7 +149,7 @@ public class ElegirPersonajee implements Screen, InputProcessor {
             esperando = false;
             juego.yoPreparado = false;
             juego.rivalPreparado = false;
-            juego.setScreen(new PartidaMulti(juego, rutaMatrizAnimaciones.get(mostrando)));
+            juego.setScreen(new PartidaMulti(juego, rutaMatrizAnimaciones.get(mostrando), mostrando + 1));
             this.dispose();
         }
 
