@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.lang.reflect.Field;
 
@@ -35,6 +36,10 @@ public abstract class Personaje {
     private float relacionAspecto;
     private float anchoRelativoAspecto, altoRelativoAspecto;
 
+    private int municion;
+    private TextureRegion hubBalas;
+    private long momentoUltimoDisparo, momentoUltimaRecarga;
+
 
     public Personaje(Array<String> rutaAnimaciones, int idPj, int vida, float velocidad) {
         this.vida = vida;
@@ -56,7 +61,13 @@ public abstract class Personaje {
         balasRival = new Array<>();
 
         hudCorazones = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Vidas/corazon.png"))));
+        hubBalas = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/b" + idPj + ".png"))));
+
+        municion = ConstantesJuego.MUNICION_MAXIMA;
+        momentoUltimoDisparo = TimeUtils.millis();
+        momentoUltimaRecarga = TimeUtils.millis();
     }
+
 
     private void inicializarAnimaciones(Array<String> rutaAnimaciones) {
 
@@ -71,6 +82,30 @@ public abstract class Personaje {
 
         animacionDerecha = new Animation(0.75f, texturasDerecha);
         animacionIzquierda = new Animation(0.75f, texturasIzquierda);
+    }
+
+    public long getMomentoUltimoDisparo() {
+        return momentoUltimoDisparo;
+    }
+
+    public void setMomentoUltimoDisparo(long momentoUltimoDisparo) {
+        this.momentoUltimoDisparo = momentoUltimoDisparo;
+    }
+
+    public long getMomentoUltimaRecarga() {
+        return momentoUltimaRecarga;
+    }
+
+    public void setMomentoUltimaRecarga(long momentoUltimaRecarga) {
+        this.momentoUltimaRecarga = momentoUltimaRecarga;
+    }
+
+    public int getMunicion() {
+        return municion;
+    }
+
+    public void setMunicion(int municion) {
+        this.municion = municion;
     }
 
     public int getVida() {
@@ -255,12 +290,25 @@ public abstract class Personaje {
         for (int i = 0; i < vida; i++) {
             batch.draw(hudCorazones, ConstantesJuego.PPU / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU, ConstantesJuego.PPU);
         }
+        //fixme relacion de aspecto al dibujar
+        for (int i = 0; i < municion; i++) {
+            batch.draw(hubBalas, ConstantesJuego.ANCHO_PANTALLA - ConstantesJuego.PPU * 3 / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU, ConstantesJuego.PPU);
+        }
     }
 
     public void disparar(int tamanoBala) {
-        Vector2 posicionBala = new Vector2(posicion.x + anchoRelativoAspecto / 2f, posicion.y + altoRelativoAspecto);
-        Bala bala = tipoBala(this.idPj, posicionBala, tamanoBala);
-        balas.add(bala);
+        if (puedeDisparar(tamanoBala) && TimeUtils.millis() - momentoUltimoDisparo >= ConstantesJuego.CADENCIA_DISPAROS_MILIS) {
+            momentoUltimoDisparo = TimeUtils.millis();
+            Gdx.app.debug("DEBUG", "Municion actual: " + municion);
+            municion -= tamanoBala;
+            Vector2 posicionBala = new Vector2(posicion.x + anchoRelativoAspecto / 2f, posicion.y + altoRelativoAspecto);
+            Bala bala = tipoBala(this.idPj, posicionBala, tamanoBala);
+            balas.add(bala);
+        }
+    }
+
+    protected boolean puedeDisparar(int tamanoBala) {
+        return municion >= tamanoBala;
     }
 
     public static void anadirBalaRival(float balaX, int idPjRival, int tamanoBala) {
@@ -355,8 +403,8 @@ public abstract class Personaje {
                 case 10:
                     bala.getPosicion().add(new Vector2(0, 1).scl(bala.getVelocidad()));
                     Polygon p = bala.obtenerPoligonoBala(bala);
-                    for(int i = 0; i < p.getVertices().length; i++){
-                        if(i%2!=0){
+                    for (int i = 0; i < p.getVertices().length; i++) {
+                        if (i % 2 != 0) {
                             p.getVertices()[i] += bala.getVelocidad();
                         }
                     }
@@ -392,8 +440,8 @@ public abstract class Personaje {
                 case 10:
                     bala.getPosicion().add(new Vector2(0, -1).scl(bala.getVelocidad()));
                     Polygon p = bala.obtenerPoligonoBala(bala);
-                    for(int i = 0; i < p.getVertices().length; i++){
-                        if(i%2!=0){
+                    for (int i = 0; i < p.getVertices().length; i++) {
+                        if (i % 2 != 0) {
                             p.getVertices()[i] -= bala.getVelocidad();
                         }
                     }
