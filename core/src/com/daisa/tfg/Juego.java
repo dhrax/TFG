@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
-import java.util.Arrays;
-
 public class Juego extends Game {
 
     //TODO Cargar todo los managers aquí
@@ -17,14 +15,13 @@ public class Juego extends Game {
     ExtendViewport viewport;
     OrthographicCamera camera;
 
-    //FirebaseDatabase firebaseDatabase;
-    //DatabaseReference databaseReference, reference;
     Preferencias preferencias;
 
     JuegoAssetManager manager = new JuegoAssetManager();
 
     // Local variable to hold the callback implementation
     private MiJuegoCallBack myGameCallback;
+    private FirebaseCallBack firebaseCallBack;
     private Array<String> nombreDispositivosVisibles;
     public ConectarJugadoresScreen conectarJugadoresScreen;
     Juego juego;
@@ -37,7 +34,6 @@ public class Juego extends Game {
 
 
     //TODO igual se podria llamar a metodos del android launcher para firebase
-    //FirebaseFirestore db;
 
     @Override
     public void create() {
@@ -45,20 +41,6 @@ public class Juego extends Game {
         batch = new SpriteBatch();
         camera = new OrthographicCamera(1920, 1080);
         viewport = new ExtendViewport(720, 1280, camera);
-
-        /*try {
-            firebaseDatabase = conectarAFirebase();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        databaseReference = firebaseDatabase.getReference("Usuario");
-
-        Usuario usuario = new Usuario("Daisa", "root");
-
-        reference = databaseReference.child(usuario.getNombre());
-        reference.setValueAsync(usuario);
-         */
 
         juego = this;
         preferencias = new Preferencias();
@@ -114,6 +96,20 @@ public class Juego extends Game {
         });
     }
 
+    public void irAMenuPrincipal() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                setScreen(new MenuPrincipalScreen(juego));
+            }
+        });
+    }
+
+    public void crearToast(String mensaje) {
+        firebaseCallBack.pintarToast(mensaje);
+    }
+
+
     public interface MiJuegoCallBack{
         void activityForResultBluetooth();
         void conectarDispositivosBluetooth(String nombreDispositivo);
@@ -123,7 +119,6 @@ public class Juego extends Game {
         void empezarAEscucharBluetooth();
         void write(String string);
         void stop();
-
     }
 
     public void activarBluetooth(){
@@ -143,17 +138,18 @@ public class Juego extends Game {
         myGameCallback.stop();
     }
 
-    /*public FirebaseDatabase conectarAFirebase() throws IOException {
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(Gdx.files.internal("key.json").read()))
-                .setDatabaseUrl("https://trabajo-final-grado.firebaseio.com/")
-                .build();
-
-        FirebaseApp defaultApp = FirebaseApp.initializeApp(options);
-
-        return FirebaseDatabase.getInstance(defaultApp);
+    public interface FirebaseCallBack{
+        void comprobacionUsuario(String nombreUsuario, String contrasena);
+        void pintarToast(String mensaje);
+        void usuarioYaExiste(String nombreUsuario, String contrasena);
     }
-     */
+
+    public void comprobacionUsuarioLIBGDX(String nombreUsuario, String contrasena){
+        firebaseCallBack.comprobacionUsuario(nombreUsuario, contrasena);
+    }
+    public void usuarioYaExisteLIBGDX(String nombreUsuario, String contrasena) {
+        firebaseCallBack.usuarioYaExiste(nombreUsuario, contrasena);
+    }
 
     public Preferencias getPreferencias(){
         return this.preferencias;
@@ -172,6 +168,13 @@ public class Juego extends Game {
         return myGameCallback;
     }
 
+    public FirebaseCallBack getFirebaseCallBack() {
+        return firebaseCallBack;
+    }
+
+    public void setFirebaseCallBack(FirebaseCallBack firebaseCallBack) {
+        this.firebaseCallBack = firebaseCallBack;
+    }
 
     public void elegirPersonajes(){
 

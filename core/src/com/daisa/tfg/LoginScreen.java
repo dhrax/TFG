@@ -175,7 +175,7 @@ public class LoginScreen implements Screen {
         btRegistro.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //juego.setScreen(new RegistroScreen(juego));
+                juego.setScreen(new RegistroScreen(juego));
             }
         });
 
@@ -192,8 +192,7 @@ public class LoginScreen implements Screen {
                     show();
                 }
                 else {
-                    Gdx.app.debug("DEBUG", "LoginScreen::Se crea la Screen MenuPrincipalScreen");
-                    juego.setScreen(new MenuPrincipalScreen(juego));
+                    juego.comprobacionUsuarioLIBGDX(tfNombreUsuario.getText(), tfContraseñaUsuario.getText());
                 }
             }
         });

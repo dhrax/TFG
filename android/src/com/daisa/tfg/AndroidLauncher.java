@@ -35,266 +35,239 @@ import java.util.Set;
 
 import static android.content.ContentValues.TAG;
 
-public class AndroidLauncher extends AndroidApplication implements Juego.MiJuegoCallBack{
+public class AndroidLauncher extends AndroidApplication implements Juego.MiJuegoCallBack {
 
-	ServicioBluetooth servicioBluetooth;
-	IntentFilter filtroEncontradoDispositivo = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-	IntentFilter filtroModoScan = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+    ServicioBluetooth servicioBluetooth;
+    ServicioFirebase servicioFirebase;
+    IntentFilter filtroEncontradoDispositivo = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+    IntentFilter filtroModoScan = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
 
-	AndroidLauncher androidLauncher;
-	Juego juego;
-	public static Array<String> nombreDispositivosVisibles = new Array<>();
-	//TODO intentar cambiar ArrayList por Conjunto
-	Set<BluetoothDevice> SetDispositivosVisibles = new LinkedHashSet<>();
+    AndroidLauncher androidLauncher;
+    Juego juego;
+    UtilAndroid utilAndroid;
+    public static Array<String> nombreDispositivosVisibles = new Array<>();
+    //TODO intentar cambiar ArrayList por Conjunto
+    Set<BluetoothDevice> SetDispositivosVisibles = new LinkedHashSet<>();
 
-	FirebaseFirestore db;
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            // In KITKAT (4.4) and next releases, hide the virtual buttons
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                hideVirtualButtons();
+            }
+        }
+    }
 
-	@Override
-	public void onWindowFocusChanged(boolean hasFocus) {
-		super.onWindowFocusChanged(hasFocus);
-		if (hasFocus) {
-			// In KITKAT (4.4) and next releases, hide the virtual buttons
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-				hideVirtualButtons();
-			}
-		}
-	}
+    @TargetApi(19)
+    private void hideVirtualButtons() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    }
 
-	@TargetApi(19)
-	private void hideVirtualButtons() {
-		getWindow().getDecorView().setSystemUiVisibility(
-				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-						| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-						| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-						| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-						| View.SYSTEM_UI_FLAG_FULLSCREEN
-						| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-	}
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 
-	@Override
-	protected void onCreate (Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+        View decorView = getWindow().getDecorView();
+        // Hide both the navigation bar and the status bar.
+        // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+        // a general rule, you should design your app to hide the status bar whenever you
+        // hide the navigation bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
 
-		View decorView = getWindow().getDecorView();
-		// Hide both the navigation bar and the status bar.
-		// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
-		// a general rule, you should design your app to hide the status bar whenever you
-		// hide the navigation bar.
-		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
-		decorView.setSystemUiVisibility(uiOptions);
+        utilAndroid = new UtilAndroid();
 
-		db = FirebaseFirestore.getInstance();
+        androidLauncher = this;
+        juego = new Juego();
+        servicioFirebase = new ServicioFirebase(androidLauncher, juego, handler, androidLauncher);
 
-		anadirDatos();
 
-		androidLauncher = this;
+        juego.setMyGameCallback(androidLauncher);
 
-		juego = new Juego();
-		juego.setMyGameCallback(androidLauncher);
+        servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher, handler);
+        androidLauncher.registerReceiver(mReceiver, filtroEncontradoDispositivo);
+        androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
 
-		servicioBluetooth = new ServicioBluetooth(androidLauncher, juego, androidLauncher, handler);
-		androidLauncher.registerReceiver(mReceiver, filtroEncontradoDispositivo);
-		androidLauncher.registerReceiver(scanRecibidor, filtroModoScan);
+        initialize(juego, config);
+    }
 
-		initialize(juego, config);
-	}
 
-	private void anadirDatos() {
+    private Handler handler = new Handler() {
 
-		/*Map<String, Object> usuarioNuevo = new HashMap<>();
-		usuarioNuevo.put("first", "Ada");
-		usuarioNuevo.put("last", "Lovelace");
-		usuarioNuevo.put("born", 1815);
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
 
-// Add a new document with a generated ID
-		db.collection("usuarios")
-				.add(usuarioNuevo)
-				.addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-					@Override
-					public void onSuccess(DocumentReference documentReference) {
-						Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-					}
-				})
-				.addOnFailureListener(new OnFailureListener() {
-					@Override
-					public void onFailure(@NonNull Exception e) {
-						Log.d(TAG, "Error adding document", e);
-					}
-				}*/
-	}
+                case ConstantesBluetooth.LEER_MENSAJE:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    // construct a string from the valid bytes in the buffer
+                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    switch (readMessage) {
+                        case "true":
+                            Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
+                            juego.mensajeRecibido(readMessage);
+                            break;
+                        case "fin":
+                            juego.elegirPersonajes();
+                            break;
+                        default:
+                            juego.balaRecibida(readMessage);
+                            break;
+                    }
+                    break;
 
-	private Handler handler  = new Handler(){
+                case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
+                    // save the connected device's name
+                    CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
+                    Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
+                    //Se elige el personaje
+                    Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
+                    juego.elegirPersonajes();
+                    break;
 
-		@Override
-		public void handleMessage(Message msg)
-		{
-			switch (msg.what) {
+                case ConstantesBluetooth.MENSAJE_TOAST:
+                    CharSequence content = msg.getData().getString("toast");
+                    Toast.makeText(androidLauncher, content, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 
-				case ConstantesBluetooth.LEER_MENSAJE:
-					byte[] readBuf = (byte[]) msg.obj;
-					// construct a string from the valid bytes in the buffer
-					String readMessage = new String(readBuf, 0, msg.arg1);
-					switch (readMessage){
-						case "true":
-							Toast.makeText(androidLauncher, "El rival ha elegido", Toast.LENGTH_SHORT).show();
-							juego.mensajeRecibido(readMessage);
-							break;
-						case "fin":
-							juego.elegirPersonajes();
-							break;
-						default:
-							juego.balaRecibida(readMessage);
-							break;
-					}
-					break;
+    @Override
+    public void activityForResultBluetooth() {
+        servicioBluetooth.activarBluetooth();
+    }
 
-				case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
-					// save the connected device's name
-					CharSequence connectedDevice = "Connected to " + msg.getData().getString("nombre de dispositivo");
-					Toast.makeText(androidLauncher, connectedDevice, Toast.LENGTH_SHORT).show();
-					//Se elige el personaje
-					Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
-					juego.elegirPersonajes();
-					break;
+    @Override
+    public void conectarDispositivosBluetooth(String nombreDispositivo) {
 
-				case ConstantesBluetooth.MENSAJE_TOAST:
-					CharSequence content = msg.getData().getString("toast");
-					Toast.makeText(androidLauncher, content , Toast.LENGTH_SHORT).show();
-					break;
-			}
-		}
-	};
+        Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
 
-	@Override
-	public void activityForResultBluetooth() {
-		servicioBluetooth.activarBluetooth();
-	}
+        ArrayList<BluetoothDevice> list = new ArrayList<>(SetDispositivosVisibles);
 
-	@Override
-	public void conectarDispositivosBluetooth(String nombreDispositivo) {
+        int pos = -1;
+        for (BluetoothDevice device : list) {
+            if (device.getName().equals(nombreDispositivo)) {
+                pos = list.indexOf(device);
+            }
+        }
+        servicioBluetooth.conectarDispositivos(list.get(pos));
+    }
 
-		Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
+    @Override
+    public void habilitarSerDescubiertoBluetooth() {
+        servicioBluetooth.serDescubierto();
+    }
 
-		ArrayList<BluetoothDevice> list = new ArrayList<>(SetDispositivosVisibles);
+    @Override
+    public boolean bluetoothEncendido() {
+        Log.d("DEBUG", "¿Bluetooth Encencido? " + servicioBluetooth.bluetoothAdapter.isEnabled());
+        return servicioBluetooth.bluetoothAdapter.isEnabled();
+    }
 
-		int pos = -1;
-		for (BluetoothDevice device : list){
-			if(device.getName().equals(nombreDispositivo)){
-				pos = list.indexOf(device);
-			}
-		}
-		servicioBluetooth.conectarDispositivos(list.get(pos));
-	}
+    @Override
+    public void descubrirDispositivosBluetooth() {
+        servicioBluetooth.descubirDispositivos();
+    }
 
-	@Override
-	public void habilitarSerDescubiertoBluetooth() {
-		servicioBluetooth.serDescubierto();
-	}
+    @Override
+    public void empezarAEscucharBluetooth() {
+        servicioBluetooth.escuchar();
+    }
 
-	@Override
-	public boolean bluetoothEncendido() {
-		Log.d("DEBUG", "¿Bluetooth Encencido? " + servicioBluetooth.bluetoothAdapter.isEnabled());
-		return servicioBluetooth.bluetoothAdapter.isEnabled();
-	}
+    @Override
+    public void write(String string) {
+        servicioBluetooth.write(string.getBytes());
+    }
 
-	@Override
-	public void descubrirDispositivosBluetooth() {
-		servicioBluetooth.descubirDispositivos();
-	}
+    @Override
+    public void stop() {
+        SetDispositivosVisibles.clear();
+        nombreDispositivosVisibles.clear();
+        servicioBluetooth.stop();
+    }
 
-	@Override
-	public void empezarAEscucharBluetooth() {
-		servicioBluetooth.escuchar();
-	}
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ConstantesBluetooth.SOLICITAR_BLUETOOTH) {
+            if (resultCode == Activity.RESULT_OK) {
+                Log.d("DEBUG", "AndroidLauncher::Se permite el Bluetooth");
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        juego.conectarJugadoresScreen = new ConectarJugadoresScreen(juego);
+                        juego.setScreen(juego.conectarJugadoresScreen);
+                    }
+                });
+            } else {
+                Log.d("DEBUG", "AndroidLauncher::Bluetooth no activado por lo que no se puede jugar al cooperativo");
+                Toast.makeText(this, "No se puede jugar sin bluetooth", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
-	@Override
-	public void write(String string) {
-		servicioBluetooth.write(string.getBytes());
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 
-	@Override
-	public void stop() {
-		SetDispositivosVisibles.clear();
-		nombreDispositivosVisibles.clear();
-		servicioBluetooth.stop();
-	}
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                Log.d("DEBUG", "AndroidLauncher::Se ha encontrado un dispositivo");
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == ConstantesBluetooth.SOLICITAR_BLUETOOTH) {
-			if (resultCode == Activity.RESULT_OK) {
-				Log.d("DEBUG", "AndroidLauncher::Se permite el Bluetooth");
-				Gdx.app.postRunnable(new Runnable() {
-					@Override
-					public void run() {
-						juego.conectarJugadoresScreen = new ConectarJugadoresScreen(juego);
-						juego.setScreen(juego.conectarJugadoresScreen);
-					}
-				});
-			} else {
-				Log.d("DEBUG", "AndroidLauncher::Bluetooth no activado por lo que no se puede jugar al cooperativo");
-				Toast.makeText(this, "No se puede jugar sin bluetooth", Toast.LENGTH_LONG).show();
-			}
-		}
-	}
+                if (device != null) {
+                    String nombreDispositivo = device.getName();
+                    if (nombreDispositivo != null) {
+                        if (SetDispositivosVisibles.add(device)) {
+                            Log.d("DEBUG", "AndroidLauncher::Dispositivo añadido a la lista: " + nombreDispositivo);
+                            nombreDispositivosVisibles.add(nombreDispositivo);
 
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
+                            juego.anadirDispositivo(nombreDispositivosVisibles);
+                            juego.refrescarListaDispositivos();
+                        }
+                    } else {
+                        Log.d("DEBUG", "AndroidLauncher::Dispositivo sin nombre, no se muestra en la lista");
+                    }
+                } else {
+                    Log.d("DEBUG", "AndroidLauncher::[ERROR] al recibir nombre del dispositivo");
+                }
+            }
+        }
+    };
 
-	BroadcastReceiver mReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-			if (BluetoothDevice.ACTION_FOUND.equals(action))
-			{
-				Log.d("DEBUG", "AndroidLauncher::Se ha encontrado un dispositivo");
-				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-				if (device != null) {
-					String nombreDispositivo = device.getName();
-					if(nombreDispositivo != null) {
-						if(SetDispositivosVisibles.add(device)){
-							Log.d("DEBUG", "AndroidLauncher::Dispositivo añadido a la lista: " + nombreDispositivo);
-							nombreDispositivosVisibles.add(nombreDispositivo);
-
-							juego.anadirDispositivo(nombreDispositivosVisibles);
-							juego.refrescarListaDispositivos();
-						}
-					}else{
-						Log.d("DEBUG", "AndroidLauncher::Dispositivo sin nombre, no se muestra en la lista");
-					}
-				}else{
-					Log.d("DEBUG", "AndroidLauncher::[ERROR] al recibir nombre del dispositivo");
-				}
-			}
-		}
-	};
-
-	BroadcastReceiver scanRecibidor = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-			if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action))
-			{
-				int modoScaneo = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.ERROR);
-				if(modoScaneo == BluetoothAdapter.SCAN_MODE_CONNECTABLE){
-					Log.d("DEBUG", "AndroidLauncher::El dispositivo no se puede descubrir pero puede recibir conexiones");
-				}else if(modoScaneo == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){
-					Log.d("DEBUG", "AndroidLauncher::El dispositivo se puede descubrir");
-				}else if(modoScaneo == BluetoothAdapter.SCAN_MODE_NONE){
-					Log.d("DEBUG", "AndroidLauncher::El dispositivo no se puede descubrir ni recibir conexiones");
-				}else if(modoScaneo == BluetoothAdapter.ERROR){
-					Log.d("DEBUG", "AndroidLauncher::[ERROR] Ha habido un fallo al recoger el modo en el que se encuentra el dispositivo");
-				}else {
-					Log.d("DEBUG", "AndroidLauncher::Opcion no contemplada, valor del modo de scaneo: " + modoScaneo);
-				}
-			}
-		}
-	};
-
+    BroadcastReceiver scanRecibidor = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
+                int modoScaneo = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.ERROR);
+                if (modoScaneo == BluetoothAdapter.SCAN_MODE_CONNECTABLE) {
+                    Log.d("DEBUG", "AndroidLauncher::El dispositivo no se puede descubrir pero puede recibir conexiones");
+                } else if (modoScaneo == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+                    Log.d("DEBUG", "AndroidLauncher::El dispositivo se puede descubrir");
+                } else if (modoScaneo == BluetoothAdapter.SCAN_MODE_NONE) {
+                    Log.d("DEBUG", "AndroidLauncher::El dispositivo no se puede descubrir ni recibir conexiones");
+                } else if (modoScaneo == BluetoothAdapter.ERROR) {
+                    Log.d("DEBUG", "AndroidLauncher::[ERROR] Ha habido un fallo al recoger el modo en el que se encuentra el dispositivo");
+                } else {
+                    Log.d("DEBUG", "AndroidLauncher::Opcion no contemplada, valor del modo de scaneo: " + modoScaneo);
+                }
+            }
+        }
+    };
 
 
 }
