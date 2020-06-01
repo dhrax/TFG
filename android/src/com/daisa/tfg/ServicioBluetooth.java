@@ -12,6 +12,9 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.daisa.tfg.constantes.ConstantesBluetooth;
+import com.daisa.tfg.principal.Juego;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

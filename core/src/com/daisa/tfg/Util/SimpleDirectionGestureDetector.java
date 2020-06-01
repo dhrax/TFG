@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.util;
 
 import com.badlogic.gdx.input.GestureDetector;
 

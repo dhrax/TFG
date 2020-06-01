@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.daisa.tfg.principal.Juego;
 
 public class RegistroScreen implements Screen {
 

@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
@@ -24,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.daisa.tfg.principal.Juego;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;

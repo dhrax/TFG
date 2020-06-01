@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.balas;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -8,6 +8,10 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.daisa.tfg.constantes.ConstantesJuego;
+import com.daisa.tfg.personajes.Personaje;
+import com.daisa.tfg.personajes.PersonajeCirc;
+import com.daisa.tfg.personajes.PersonajePol;
 
 import java.lang.reflect.Field;
 
@@ -252,7 +256,7 @@ public abstract class Bala {
         return null;
     }
 
-    Polygon obtenerPoligonoBala(Bala bala) {
+    public Polygon obtenerPoligonoBala(Bala bala) {
         return obtenerPoligono(bala);
     }
 
@@ -272,7 +276,7 @@ public abstract class Bala {
         return null;
     }
 
-    Circle obtenerCirculoBala(Bala bala) {
+    public Circle obtenerCirculoBala(Bala bala) {
         return obtenerCirculo(bala);
     }
 

@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.personajes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,6 +12,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.daisa.tfg.balas.Bala;
+import com.daisa.tfg.balas.BalaCirc;
+import com.daisa.tfg.balas.BalaPol;
+import com.daisa.tfg.balas.BalaRect;
+import com.daisa.tfg.constantes.ConstantesJuego;
+import com.daisa.tfg.util.Explosion;
 
 import java.lang.reflect.Field;
 
@@ -374,7 +380,7 @@ public abstract class Personaje {
         }
     }
 
-    abstract void recolocarHitbox();
+    public abstract void recolocarHitbox();
 
     public void dispose() {
         estado = EstadosPersonaje.MUERTO;
@@ -389,7 +395,7 @@ public abstract class Personaje {
         DERECHA, IZQUIERDA, QUIETO, MUERTO
     }
 
-    void moverBalas(Array<Bala> balas) {
+    public void moverBalas(Array<Bala> balas) {
         for (Bala bala : balas) {
             switch (bala.getIdPj()) {
                 case 1:
@@ -463,7 +469,7 @@ public abstract class Personaje {
         }
     }
 
-    Polygon obtenerPoligono(Personaje personaje) {
+    public Polygon obtenerPoligono(Personaje personaje) {
         Field field;
         try {
             field = personaje.getClass().getDeclaredField("pol");
@@ -475,7 +481,7 @@ public abstract class Personaje {
         return null;
     }
 
-    Circle obtenerCirculo(Personaje personaje) {
+    public Circle obtenerCirculo(Personaje personaje) {
         try {
             Field field = personaje.getClass().getDeclaredField("circ");
             field.setAccessible(true);

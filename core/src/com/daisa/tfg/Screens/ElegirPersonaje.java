@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
@@ -16,6 +16,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
+import com.daisa.tfg.principal.Juego;
+import com.daisa.tfg.principal.PartidaMulti;
+import com.daisa.tfg.util.SimpleDirectionGestureDetector;
 
 public class ElegirPersonaje implements Screen, InputProcessor {
     Juego juego;

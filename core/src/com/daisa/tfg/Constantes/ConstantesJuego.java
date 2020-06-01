@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.constantes;
 
 import com.badlogic.gdx.Gdx;
 

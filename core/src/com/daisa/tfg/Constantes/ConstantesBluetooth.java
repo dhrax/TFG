@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.constantes;
 
 public class ConstantesBluetooth {
     public static final int SOLICITAR_BLUETOOTH = 1;

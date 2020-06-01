@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.personajes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Circle;
@@ -20,7 +20,7 @@ public class PersonajeCirc extends Personaje {
     }
 
     @Override
-    void recolocarHitbox() {
+    public void recolocarHitbox() {
         circ.setPosition(getPosicion().x + getAnchoRelativoAspecto() / 2, getPosicion().y + getAltoRelativoAspecto() / 2);
     }
 }

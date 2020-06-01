@@ -3,6 +3,8 @@ package com.daisa.tfg;
 import android.app.Activity;
 import android.widget.Toast;
 
+import com.daisa.tfg.principal.Juego;
+
 public class UtilAndroid {
     Activity activity;
     Juego juego;

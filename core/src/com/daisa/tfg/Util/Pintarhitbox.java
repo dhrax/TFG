@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.util;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -6,6 +6,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
+import com.daisa.tfg.balas.Bala;
+import com.daisa.tfg.balas.BalaPol;
+import com.daisa.tfg.balas.BalaRect;
+import com.daisa.tfg.personajes.Personaje;
+import com.daisa.tfg.personajes.PersonajeCirc;
 
 public class Pintarhitbox {
 

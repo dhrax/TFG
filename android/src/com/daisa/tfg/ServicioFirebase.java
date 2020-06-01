@@ -8,6 +8,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.daisa.tfg.constantes.ConstantesBluetooth;
+import com.daisa.tfg.principal.Juego;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;

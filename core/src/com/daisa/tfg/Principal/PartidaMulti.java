@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.principal;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -12,6 +12,14 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.daisa.tfg.balas.Bala;
+import com.daisa.tfg.constantes.ConstantesJuego;
+import com.daisa.tfg.personajes.Personaje;
+import com.daisa.tfg.personajes.PersonajeCirc;
+import com.daisa.tfg.personajes.PersonajePol;
+import com.daisa.tfg.screens.ElegirPersonaje;
+import com.daisa.tfg.util.Explosion;
+import com.daisa.tfg.util.FondoAnimado;
 
 public class PartidaMulti implements Screen, InputProcessor {
 

@@ -1,4 +1,4 @@
-package com.daisa.tfg;
+package com.daisa.tfg.principal;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
@@ -7,17 +7,24 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.daisa.tfg.personajes.Personaje;
+import com.daisa.tfg.screens.ConectarJugadoresScreen;
+import com.daisa.tfg.screens.ElegirModoScreen;
+import com.daisa.tfg.screens.ElegirPersonaje;
+import com.daisa.tfg.screens.LoginScreen;
+import com.daisa.tfg.screens.MenuPrincipalScreen;
+import com.daisa.tfg.util.JuegoAssetManager;
 
 public class Juego extends Game {
 
     //TODO Cargar todo los managers aquí
-    SpriteBatch batch;
-    ExtendViewport viewport;
-    OrthographicCamera camera;
+    public SpriteBatch batch;
+    public ExtendViewport viewport;
+    public OrthographicCamera camera;
 
-    Preferencias preferencias;
+    public Preferencias preferencias;
 
-    JuegoAssetManager manager = new JuegoAssetManager();
+    public JuegoAssetManager manager = new JuegoAssetManager();
 
     // Local variable to hold the callback implementation
     private MiJuegoCallBack myGameCallback;
@@ -26,7 +33,7 @@ public class Juego extends Game {
     public ConectarJugadoresScreen conectarJugadoresScreen;
     Juego juego;
 
-    boolean yoPreparado = false, rivalPreparado = false;
+    public boolean yoPreparado = false, rivalPreparado = false;
 
     public Array<String> getNombreDispositivosVisibles() {
         return nombreDispositivosVisibles;
