@@ -191,11 +191,13 @@ public abstract class Bala {
                 Circle circPersonaje = obtenerCirculoPersonaje(personaje);
                 if (rect != null && circPersonaje != null)
                     return Intersector.overlaps(circPersonaje, rect);
-
             } else if (personaje instanceof PersonajePol) {
                 Polygon polPersonaje = obtenerPoligonoPersonaje(personaje);
-                if (rect != null && polPersonaje != null)
+                if (rect != null && polPersonaje != null) {
+                    Gdx.app.debug("DEBUG", "Se comprueba colision balaRect personajePol");
                     return chocaRectanguloPoligono(rect, polPersonaje, polPersonaje.getVertices());
+                }
+
             }
 
         } else if (bala instanceof BalaCirc) {
@@ -219,11 +221,20 @@ public abstract class Bala {
 
             } else if (personaje instanceof PersonajePol) {
                 Polygon polPersonaje = obtenerPoligonoPersonaje(personaje);
-                if (pol != null && polPersonaje != null)
+                if (pol != null && polPersonaje != null) {
+                    Gdx.app.debug("DEBUG", "Se comprueba colision balaPol personajePol");
+                    for (int i = 0; i < polPersonaje.getTransformedVertices().length; i += 2) {
+                        if (pol.contains(polPersonaje.getTransformedVertices()[i], polPersonaje.getTransformedVertices()[i + 1])) {
+                            Gdx.app.debug("DEBUG", "balaPol dentro de personajePol");
+                            return true;
+                        }
+                    }
                     return Intersector.overlapConvexPolygons(pol, polPersonaje);
+                }
+
             }
         }
-        return false;
+        return true;
     }
 
     public Rectangle obtenerRectanguloBala(Bala bala) {
@@ -284,6 +295,8 @@ public abstract class Bala {
         Polygon rPoly = new Polygon(vertices);
         rPoly.setPosition(rect.x, rect.y);
 
+        if (polRival.contains(rect.x, rect.y))
+            return true;
         return Intersector.overlapConvexPolygons(rPoly, polRival);
     }
 
@@ -298,7 +311,6 @@ public abstract class Bala {
                 return true;
         return pol.contains(circ.x, circ.y);
     }
-
 
 
 }

@@ -40,6 +40,8 @@ public abstract class Personaje {
     private TextureRegion hubBalas;
     private long momentoUltimoDisparo, momentoUltimaRecarga;
 
+    private Array<Explosion> arrayExplosiones = new Array<>();
+
 
     public Personaje(Array<String> rutaAnimaciones, int idPj, int vida, float velocidad) {
         this.vida = vida;
@@ -82,6 +84,14 @@ public abstract class Personaje {
 
         animacionDerecha = new Animation(0.75f, texturasDerecha);
         animacionIzquierda = new Animation(0.75f, texturasIzquierda);
+    }
+
+    public Array<Explosion> getArrayExplosiones() {
+        return arrayExplosiones;
+    }
+
+    public void setArrayExplosiones(Array<Explosion> arrayExplosiones) {
+        this.arrayExplosiones = arrayExplosiones;
     }
 
     public long getMomentoUltimoDisparo() {
@@ -290,16 +300,16 @@ public abstract class Personaje {
         for (int i = 0; i < vida; i++) {
             batch.draw(hudCorazones, ConstantesJuego.PPU / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU, ConstantesJuego.PPU);
         }
-        //fixme relacion de aspecto al dibujar
+
+        float relacionAspecto = (float) hubBalas.getRegionWidth() / hubBalas.getRegionHeight();
         for (int i = 0; i < municion; i++) {
-            batch.draw(hubBalas, ConstantesJuego.ANCHO_PANTALLA - ConstantesJuego.PPU * 3 / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU, ConstantesJuego.PPU);
+            batch.draw(hubBalas, ConstantesJuego.ANCHO_PANTALLA - ConstantesJuego.PPU * 3 / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU * relacionAspecto, ConstantesJuego.PPU);
         }
     }
 
     public void disparar(int tamanoBala) {
         if (puedeDisparar(tamanoBala) && TimeUtils.millis() - momentoUltimoDisparo >= ConstantesJuego.CADENCIA_DISPAROS_MILIS) {
             momentoUltimoDisparo = TimeUtils.millis();
-            Gdx.app.debug("DEBUG", "Municion actual: " + municion);
             municion -= tamanoBala;
             Vector2 posicionBala = new Vector2(posicion.x + anchoRelativoAspecto / 2f, posicion.y + altoRelativoAspecto);
             Bala bala = tipoBala(this.idPj, posicionBala, tamanoBala);

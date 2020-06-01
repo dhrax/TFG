@@ -22,6 +22,7 @@ public class PartidaMulti implements Screen, InputProcessor {
 
     OrthographicCamera camera;
     private int color;
+    FondoAnimado fondoAnimado;
 
     public PartidaMulti(Juego juego, Array<String> rutaTexturas, int idPJ) {
         this.juego = juego;
@@ -34,7 +35,9 @@ public class PartidaMulti implements Screen, InputProcessor {
         instanciarPersonaje(idPJ, rutaTexturas);
         duracionPulsacion = 0;
 
-        color = 0;
+        color = 1;
+
+        fondoAnimado = new FondoAnimado();
     }
 
     private void instanciarPersonaje(int idPJ, Array<String> rutaTexturas) {
@@ -71,12 +74,17 @@ public class PartidaMulti implements Screen, InputProcessor {
     }
 
     private void actualizar(float delta) {
+        moverFondo(delta);
         moverPersonaje(delta);
         recargar();
         comprobarToquePantalla();
         moverBalas();
-        comprobarColisiones();
+        comprobarColisiones(delta);
         comprobarLimites();
+    }
+
+    private void moverFondo(float delta) {
+        fondoAnimado.actualizar(delta);
     }
 
     private void recargar() {
@@ -130,7 +138,7 @@ public class PartidaMulti implements Screen, InputProcessor {
     }
 
 
-    private void comprobarColisiones() {
+    private void comprobarColisiones(float delta) {
         for (Bala bala : personaje.getBalas()) {
             for (Bala balaRival : Personaje.getBalasRival()) {
                 if (bala.comprobarColisiones(bala, balaRival)) {
@@ -143,6 +151,7 @@ public class PartidaMulti implements Screen, InputProcessor {
         for (Bala balaRival : Personaje.getBalasRival()) {
             if (balaRival.comprobarColisiones(balaRival, personaje)) {
                 Personaje.getBalasRival().removeValue(balaRival, false);
+                personaje.getArrayExplosiones().add(new Explosion());
                 personaje.setVida(personaje.getVida() - balaRival.getTamanoBala());
                 if (personaje.getVida() <= 0) {
                     //TODO añadir el marcador (pantalla de seleccion de personaje)
@@ -153,6 +162,9 @@ public class PartidaMulti implements Screen, InputProcessor {
                     this.dispose();
                 }
             }
+        }
+        for (Explosion explosion : personaje.getArrayExplosiones()) {
+            explosion.actualizar(delta);
         }
     }
 
@@ -177,6 +189,13 @@ public class PartidaMulti implements Screen, InputProcessor {
                 personaje.getBalas().removeValue(bala, false);
             }
         }
+
+        for (Bala balaRival : Personaje.getBalasRival()){
+            if(balaRival.getPosicion().y <= -balaRival.getAltoRelativoAspecto()){
+                Personaje.getBalasRival().removeValue(balaRival, false);
+                Gdx.app.debug("DEBUG", "Se borra bala de las balas rivales");
+            }
+        }
     }
 
     private void pintar() {
@@ -184,11 +203,18 @@ public class PartidaMulti implements Screen, InputProcessor {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         juego.batch.begin();
+        fondoAnimado.pintar(juego.batch);
         personaje.pintar(juego.batch);
         for (Bala bala : personaje.getBalas())
             bala.pintar(juego.batch);
         for (Bala balaRival : Personaje.getBalasRival()) {
             balaRival.pintar(juego.batch);
+        }
+        for (Explosion explosion : personaje.getArrayExplosiones()) {
+            explosion.pintar(juego.batch, personaje.getPosicion().x + personaje.getAnchoRelativoAspecto()/2, personaje.getPosicion().y + personaje.getAltoRelativoAspecto());
+            if (explosion.animacionTerminada){
+                personaje.getArrayExplosiones().removeValue(explosion, false);
+            }
         }
         personaje.dibujarHud(juego.batch);
         juego.batch.end();
