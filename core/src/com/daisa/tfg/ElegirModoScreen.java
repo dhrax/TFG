@@ -43,7 +43,7 @@ public class ElegirModoScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 //TODO quitar si finalmente solo hay un personaje
                 Gdx.app.debug("DEBUG", "ElegirModoScreen::Se crea la Screen ElegirPersonaje");
-                juego.setScreen(new ElegirPersonajee(juego));
+                juego.setScreen(new ElegirPersonaje(juego));
             }
         });
 
@@ -51,7 +51,6 @@ public class ElegirModoScreen implements Screen {
         btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //TODO hacer emparejamiento Bluetooth
                 Gdx.app.debug("DEBUG", "ElegirModoScreen::Se comprueba si el Bluetooth esta encendido");
                 if(juego.estaBluetoothEncencido()){
                     Gdx.app.debug("DEBUG", "ElegirModoScreen::Bluetooth encendido, se crea la Screen ConectarJugadoresScreen");
@@ -61,7 +60,6 @@ public class ElegirModoScreen implements Screen {
                     Gdx.app.debug("DEBUG", "ElegirModoScreen::Bluetooth apagado, se pide permiso para encenderlo");
                     juego.activarBluetooth();
                 }
-
             }
         });
 

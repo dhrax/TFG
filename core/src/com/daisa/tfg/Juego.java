@@ -81,10 +81,23 @@ public class Juego extends Game {
     }
 
     public void balaRecibida(String readMessage) {
-        String[] mensaje = readMessage.split(":");
-        float balaX = Float.parseFloat(mensaje[0]);
-        Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + "]");
-        Personaje.anadirBalaRival(balaX);
+        try{
+            String[] mensaje = readMessage.split(":");
+            final float balaX = Float.parseFloat(mensaje[0]);
+            final int idPJRival = Integer.parseInt(mensaje[1]);
+            final int tamanoBala = Integer.parseInt(mensaje[2]);
+            Gdx.app.debug("DEBUG", "Se ha recibido una bala de rival. Bala: [" + mensaje[0] + ", " + mensaje[1] +  ", " + mensaje[2] +  "]");
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    Personaje.anadirBalaRival(balaX, idPJRival, tamanoBala);
+                }
+            });
+        }catch(Exception e){
+            Gdx.app.debug("DEBUG", "[ERROR] Error al convertir los datos dela bala rival");
+        }
+
+
     }
 
     public void conexionPerdida() {
@@ -96,6 +109,7 @@ public class Juego extends Game {
         });
     }
 
+
     public void irAMenuPrincipal() {
         Gdx.app.postRunnable(new Runnable() {
             @Override
@@ -105,10 +119,18 @@ public class Juego extends Game {
         });
     }
 
+    public void rivalDesconectado() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                setScreen(new ElegirModoScreen(juego));
+            }
+        });
+    }
+              
     public void crearToast(String mensaje) {
         firebaseCallBack.pintarToast(mensaje);
     }
-
 
     public interface MiJuegoCallBack{
         void activityForResultBluetooth();
@@ -182,7 +204,7 @@ public class Juego extends Game {
             @Override
             public void run() {
 
-                setScreen(new ElegirPersonajee(juego));
+                setScreen(new ElegirPersonaje(juego));
             }
         });
 
