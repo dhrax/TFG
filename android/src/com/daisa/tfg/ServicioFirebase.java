@@ -60,7 +60,7 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                 });
     }
 
-    private void comprobarUsuarioContrasena(String nombreUsuario, String contrasena) {
+    private void comprobarUsuarioContrasena(final String nombreUsuario, String contrasena) {
         db.collection("usuarios")
                 .whereEqualTo("nombre", nombreUsuario)
                 .whereEqualTo("contrasena", contrasena)
@@ -71,6 +71,7 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                         if (task.isSuccessful()) {
                             if (task.getResult().size() >= 1) {
                                 juego.irAMenuPrincipal();
+                                juego.setNombreUsuario(nombreUsuario);
                             } else {
                                 pintarToast("Contraseña incorrecta");
                                 //todo llamar al show de LoginScreen
@@ -161,7 +162,7 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
         return hayError;
     }
 
-    private void registrarUsuario(String nombreUsuario, String contrasena) {
+    private void registrarUsuario(final String nombreUsuario, String contrasena) {
 
         Map<String, Object> usuarioNuevo = new HashMap<>();
         usuarioNuevo.put("nombre", nombreUsuario);
@@ -174,6 +175,7 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("DEBUG", "Se ha añadido el usuario correctamente con el ID: " + documentReference.getId());
                         juego.irAMenuPrincipal();
+                        juego.setNombreUsuario(nombreUsuario);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

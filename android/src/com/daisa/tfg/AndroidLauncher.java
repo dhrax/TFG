@@ -52,7 +52,6 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
     Juego juego;
     UtilAndroid utilAndroid;
     public static Array<String> nombreDispositivosVisibles = new Array<>();
-    //TODO intentar cambiar ArrayList por Conjunto
     Set<BluetoothDevice> SetDispositivosVisibles = new LinkedHashSet<>();
 
     @Override
@@ -123,6 +122,7 @@ public class AndroidLauncher extends AndroidApplication implements Juego.MiJuego
                             juego.mensajeRecibido(readMessage);
                             break;
                         case "fin":
+                            juego.setMiPuntuacion(juego.getMiPuntuacion() + 1);
                             juego.elegirPersonajes();
                             break;
                         default:

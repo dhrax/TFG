@@ -23,7 +23,6 @@ public class RegistroScreen implements Screen {
 
     Juego juego;
     Stage stage;
-    Skin skin;
     TextureRegion fondo;
     Label lbNombre;
     Label lbContra;
@@ -58,15 +57,6 @@ public class RegistroScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        if (!juego.manager.managerJuego.isLoaded(juego.manager.skin)) {
-            Gdx.app.debug("DEBUG", "LoginScreen::Skin no cargada");
-            juego.manager.cargaSkin();
-            juego.manager.managerJuego.finishLoading();
-            Gdx.app.debug("DEBUG", "LoginScreen::Skin terminada de cargar");
-        }
-
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
-
         //TODO cambiar imagen de fondo
         fondo = new TextureRegion(new Texture("fondo.jpg"));
         tabla.setBackground(new TiledDrawable(fondo));
@@ -75,20 +65,22 @@ public class RegistroScreen implements Screen {
         Image imgExclamacion2 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
         Image imgExclamacion3 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
 
+
+
         CharSequence nombUsuario = "Nombre:";
-        lbNombre = new Label(nombUsuario, skin);
-        lbNombre.setFontScale(3, 3);
+        lbNombre = new Label(nombUsuario, juego.manager.getEstiloLabel());
+        lbNombre.setFontScale(2);
 
         CharSequence nombContra = "Contrasena";
-        lbContra = new Label(nombContra, skin);
-        lbContra.setFontScale(3, 3);
+        lbContra = new Label(nombContra, juego.manager.getEstiloLabel());
+        lbContra.setFontScale(2);
 
         CharSequence nombContraRepe = "Repetir contrasena";
-        lbContraRepe = new Label(nombContraRepe, skin);
-        lbContraRepe.setFontScale(3, 3);
+        lbContraRepe = new Label(nombContraRepe, juego.manager.getEstiloLabel());
+        lbContraRepe.setFontScale(2);
 
 
-        tfNombUsuario = new TextField(nombAlmacenado, skin);
+        tfNombUsuario = new TextField(nombAlmacenado, juego.manager.getEstiloTextField());
         nombAlmacenado = "";
 
         tfNombUsuario.addListener(new ClickListener() {
@@ -109,7 +101,7 @@ public class RegistroScreen implements Screen {
             }
         });
 
-        tfContraUsuario = new TextField(contraAlmacenada, skin);
+        tfContraUsuario = new TextField(contraAlmacenada, juego.manager.getEstiloTextField());
         contraAlmacenada = "";
 
 
@@ -131,7 +123,7 @@ public class RegistroScreen implements Screen {
             }
         });
 
-        tfContraUsuarioRepe = new TextField(contraAlmacenadaRepe, skin);
+        tfContraUsuarioRepe = new TextField(contraAlmacenadaRepe, juego.manager.getEstiloTextField());
         contraAlmacenadaRepe = "";
 
 
@@ -153,7 +145,7 @@ public class RegistroScreen implements Screen {
             }
         });
 
-        btRegistrame = new TextButton("Registrame", skin);
+        btRegistrame = new TextButton("Registrame", juego.manager.getSkin());
         btRegistrame.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -180,7 +172,7 @@ public class RegistroScreen implements Screen {
             }
         });
 
-        btVolver = new TextButton("Volver", skin);
+        btVolver = new TextButton("Volver", juego.manager.getSkin());
         btVolver.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

@@ -4,34 +4,21 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.daisa.tfg.principal.Juego;
-import com.kotcrab.vis.ui.VisUI;
-import com.kotcrab.vis.ui.widget.VisLabel;
-import com.kotcrab.vis.ui.widget.VisTable;
-import com.kotcrab.vis.ui.widget.VisTextButton;
-import com.kotcrab.vis.ui.widget.VisTextField;
-
-import java.util.Random;
 
 //TODO buscar un tipo de fuente
 //TODO Cuando se tenga el tipo de fuente y la skin, cambiar VisTextField por TextField
@@ -41,15 +28,12 @@ public class LoginScreen implements Screen {
     Juego juego;
     Stage stage;
 
-    Skin skin;
-
     Label lbNombreJuego;
     Label lbUsuario;
     Label lbContra;
     //TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
     TextField tfNombreUsuario;
     TextField tfContraseñaUsuario;
-    Label lbOlvidarContrasena;
     TextButton btRegistro;
     TextButton btInicioSesion;
 
@@ -68,21 +52,11 @@ public class LoginScreen implements Screen {
 
     @Override
     public void show() {
-
         stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
-
-        if (!juego.manager.managerJuego.isLoaded(juego.manager.skin)) {
-            Gdx.app.debug("DEBUG", "LoginScreen::Skin no cargada");
-            juego.manager.cargaSkin();
-            juego.manager.managerJuego.finishLoading();
-            Gdx.app.debug("DEBUG", "LoginScreen::Skin terminada de cargar");
-        }
-
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
         //TODO cambiar imagen de fondo
         fondo = new TextureRegion(new Texture("fondo.jpg"));
@@ -92,35 +66,22 @@ public class LoginScreen implements Screen {
         Image imgExclamacion = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
         Image imgExclamacion2 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
 
-        //El font scale no debría hacer falta una vez que se haya escogido el tipo de letra
-        //TODO buscar tipo de letra nuevo
         CharSequence nombreJuego = "NOMBRE_JUEGO";
-        lbNombreJuego = new Label(nombreJuego, skin);
-        lbNombreJuego.setFontScale(5, 5);
+        lbNombreJuego = new Label(nombreJuego, juego.manager.getEstiloLabel());
+        lbNombreJuego.setFontScale(3);
 
         CharSequence nombUsuario = "Usuario";
-        lbUsuario = new Label(nombUsuario, skin);
-        lbUsuario.setFontScale(3, 3);
+        lbUsuario = new Label(nombUsuario, juego.manager.getEstiloLabel());
+        lbUsuario.setFontScale(2);
 
         CharSequence nombContra = "Contrasena";
-        lbContra = new Label(nombContra, skin);
-        lbContra.setFontScale(3, 3);
+        lbContra = new Label(nombContra, juego.manager.getEstiloLabel());
+        lbContra.setFontScale(2);
 
-        //TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
 
-        tfNombreUsuario = new TextField(nombAlmacenado, skin);
+        tfNombreUsuario = new TextField(nombAlmacenado, juego.manager.getEstiloTextField());
         nombAlmacenado = "";
 
-
-		/*
-		Cuando se pulse el VisTextField, aparece una ventana que permite introducir los datos necesarios.
-		Este WorkAround se ha hecho porque, por defecto, si se pulsa en el VisTextField, por la posicion en la que estos se encuentran en esta UI,
-		el teclado tapa el VisTextField por lo que no se ve lo que se esta escribiendo. De esta forma se arregla ese problema.
-		El inconveniente es que hay que pulsar demasiadas veces para rellenar los datos.
-
-		TODO investigar hacer hacer que la camara permita que el VisTextField se vea:
-			https://stackoverflow.com/questions/32788428/libgdx-textfield-show-keyboard-input-field
-		 */
         tfNombreUsuario.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -140,7 +101,7 @@ public class LoginScreen implements Screen {
         });
 
 
-        tfContraseñaUsuario = new TextField(contraAlmacenada, skin);
+        tfContraseñaUsuario = new TextField(contraAlmacenada, juego.manager.getEstiloTextField());
         contraAlmacenada = "";
 
 
@@ -162,17 +123,7 @@ public class LoginScreen implements Screen {
             }
         });
 
-        CharSequence textoLabel = "Olvido mi contrasena";
-        lbOlvidarContrasena = new Label(textoLabel, skin);
-        lbOlvidarContrasena.setFontScale(2, 2);
-        lbOlvidarContrasena.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                //juego.setScreen(new ResetContrasena(juego));
-            }
-        });
-
-        btRegistro = new TextButton("Registrarse", skin);
+        btRegistro = new TextButton("Registrarse", juego.manager.getSkin());
         btRegistro.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -180,7 +131,7 @@ public class LoginScreen implements Screen {
             }
         });
 
-        btInicioSesion = new TextButton("Iniciar de Sesion", skin);
+        btInicioSesion = new TextButton("Iniciar de Sesion", juego.manager.getSkin());
         btInicioSesion.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -220,13 +171,12 @@ public class LoginScreen implements Screen {
         } else {
             tabla.add();
         }
-
         tabla.row().padBottom(20).padTop(20);
-        tabla.add(lbOlvidarContrasena).height(80).colspan(3);
+        tabla.add().height(80).colspan(3);
         tabla.add();
         tabla.add();
 
-        tabla.row().padBottom(30);
+        tabla.row().padTop(20);
         tabla.add(btRegistro).width(700).height(120);
         tabla.add().width(200);
         tabla.add(btInicioSesion).width(700).height(120);
