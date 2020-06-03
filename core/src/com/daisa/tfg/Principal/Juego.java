@@ -24,7 +24,7 @@ public class Juego extends Game {
 
     public Preferencias preferencias;
 
-    public JuegoAssetManager manager = new JuegoAssetManager();
+    public JuegoAssetManager manager;
 
     // Local variable to hold the callback implementation
     private MiJuegoCallBack myGameCallback;
@@ -34,6 +34,8 @@ public class Juego extends Game {
     Juego juego;
 
     public boolean yoPreparado = false, rivalPreparado = false;
+    private int miPuntuacion = 0, rivalPuntuacion = 0;
+    private String nombreUsuario = null;
 
     public Array<String> getNombreDispositivosVisibles() {
         return nombreDispositivosVisibles;
@@ -52,9 +54,9 @@ public class Juego extends Game {
         juego = this;
         preferencias = new Preferencias();
 
-        manager.cargarFuente();
+        manager = new JuegoAssetManager();
 
-        setScreen(new LoginScreen(juego));
+        setScreen(new ElegirPersonaje(juego));
     }
 
     public boolean estaBluetoothEncencido() {
@@ -206,14 +208,35 @@ public class Juego extends Game {
     }
 
     public void elegirPersonajes(){
-
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-
                 setScreen(new ElegirPersonaje(juego));
             }
         });
+    }
 
+    public int getMiPuntuacion() {
+        return miPuntuacion;
+    }
+
+    public void setMiPuntuacion(int miPuntuacion) {
+        this.miPuntuacion = miPuntuacion;
+    }
+
+    public int getRivalPuntuacion() {
+        return rivalPuntuacion;
+    }
+
+    public void setRivalPuntuacion(int rivalPuntuacion) {
+        this.rivalPuntuacion = rivalPuntuacion;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 }

@@ -30,7 +30,6 @@ public class ElegirPersonaje implements Screen, InputProcessor {
     Stage stage;
     InputProcessor gestosProcesador;
     boolean esperando;
-    Skin skin;
     Array<Array<String>> rutaMatrizAnimaciones = new Array<>();
 
     public ElegirPersonaje(Juego juego) {
@@ -95,14 +94,11 @@ public class ElegirPersonaje implements Screen, InputProcessor {
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
-
 
         regionGrandes.get(mostrando).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (!esperando) {
-                    //SE EMPIEZA LA PARTIDA
                     juego.comenzarPartida();
                     esperando = true;
                     juego.yoPreparado = true;
@@ -111,6 +107,17 @@ public class ElegirPersonaje implements Screen, InputProcessor {
             }
         });
 
+
+        CharSequence datos = juego.getNombreUsuario() + ": " + juego.getMiPuntuacion() + " - Rival: " + juego.getRivalPuntuacion();
+        Label puntuacion = new Label(datos, juego.manager.getEstiloLabel());
+        puntuacion.setFontScale(3);
+
+        tabla.row().height(300).padBottom(150);
+        tabla.add().width(200);
+        tabla.add(puntuacion);
+        tabla.add().width(200);
+
+        tabla.row();
         if (mostrando > 0) {
             tabla.add(regionsPequenos.get(mostrando - 1)).padRight(50);
         } else {
@@ -125,7 +132,7 @@ public class ElegirPersonaje implements Screen, InputProcessor {
             tabla.add().width(400).height(400).padLeft(50);
         }
 
-        Label label = new Label("Esperando al rival", skin);
+        Label label = new Label("Esperando al rival", juego.manager.getEstiloLabel());
         label.setColor(Color.BLACK);
         if (esperando) {
             tabla.row();
@@ -145,7 +152,7 @@ public class ElegirPersonaje implements Screen, InputProcessor {
     @Override
     public void render(float delta) {
 
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (juego.yoPreparado && juego.rivalPreparado) {
