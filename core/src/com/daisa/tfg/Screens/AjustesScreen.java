@@ -21,7 +21,6 @@ public class AjustesScreen implements Screen {
 
     Juego juego;
     Stage stage;
-    Skin skin;
 
     private Label titleLabel;
     private Label volumeMusicLabel;
@@ -45,20 +44,19 @@ public class AjustesScreen implements Screen {
         juego.manager.cargaSkin();
         juego.manager.managerJuego.finishLoading();
 
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
 
-        titleLabel = new Label( "Preferencias", skin );
+        titleLabel = new Label( "Preferencias", juego.manager.getSkin() );
         titleLabel.setFontScale(4);
-        volumeMusicLabel = new Label( "Volumen Musica", skin );
+        volumeMusicLabel = new Label( "Volumen Musica", juego.manager.getSkin() );
         volumeMusicLabel.setFontScale(4);
-        volumeSoundLabel = new Label( "Volumen Sonido", skin );
+        volumeSoundLabel = new Label( "Volumen Sonido", juego.manager.getSkin() );
         volumeSoundLabel.setFontScale(4);
-        musicOnOffLabel = new Label( "Musica", skin );
+        musicOnOffLabel = new Label( "Musica", juego.manager.getSkin() );
         musicOnOffLabel.setFontScale(4);
-        soundOnOffLabel = new Label( "Sonido", skin );
+        soundOnOffLabel = new Label( "Sonido", juego.manager.getSkin() );
         soundOnOffLabel.setFontScale(4);
 
-        final Slider volumeMusicSlider = new Slider(0f, 1f, 0.1f,false, skin);
+        final Slider volumeMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.getSkin());
         volumeMusicSlider.scaleBy(1, 3  );
         volumeMusicSlider.setValue( juego.getPreferencias().getMusicVolume() );
         volumeMusicSlider.addListener( new EventListener() {
@@ -73,7 +71,7 @@ public class AjustesScreen implements Screen {
         container.setTransform(true);
         container.size(400, 100);
 
-        final Slider soundMusicSlider = new Slider(0f, 1f, 0.1f,false, skin);
+        final Slider soundMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.getSkin());
         volumeMusicSlider.setValue( juego.getPreferencias().getSoundVolume() );
         volumeMusicSlider.addListener( new EventListener() {
             @Override
@@ -87,7 +85,7 @@ public class AjustesScreen implements Screen {
         container2.setTransform(true);
         container2.size(400, 100);
 
-        final CheckBox musicCheckbox = new CheckBox(null, skin);
+        final CheckBox musicCheckbox = new CheckBox(null, juego.manager.getSkin());
         musicCheckbox.setChecked( juego.getPreferencias().isMusicEnabled() );
         musicCheckbox.addListener( new EventListener() {
             @Override
@@ -98,7 +96,7 @@ public class AjustesScreen implements Screen {
             }
         });
 
-        final CheckBox soundEffectsCheckbox = new CheckBox(null, skin);
+        final CheckBox soundEffectsCheckbox = new CheckBox(null, juego.manager.getSkin());
         musicCheckbox.setChecked( juego.getPreferencias().isSoundEffectsEnabled() );
         musicCheckbox.addListener( new EventListener() {
             @Override
@@ -109,7 +107,7 @@ public class AjustesScreen implements Screen {
             }
         });
 
-        final TextButton backButton = new TextButton("Volver", skin); // the extra argument here "small" is used to set the button to the smaller version instead of the big default version
+        final TextButton backButton = new TextButton("Volver", juego.manager.getSkin());
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

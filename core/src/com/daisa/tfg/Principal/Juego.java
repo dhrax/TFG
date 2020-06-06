@@ -41,9 +41,6 @@ public class Juego extends Game {
         return nombreDispositivosVisibles;
     }
 
-
-    //TODO igual se podria llamar a metodos del android launcher para firebase
-
     @Override
     public void create() {
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
@@ -56,7 +53,7 @@ public class Juego extends Game {
 
         manager = new JuegoAssetManager();
 
-        setScreen(new ElegirPersonaje(juego));
+        setScreen(new LoginScreen(juego));
     }
 
     public boolean estaBluetoothEncencido() {

@@ -24,9 +24,6 @@ import static com.daisa.tfg.ServicioBluetooth.EstadosBluetooth.*;
 
 public class ServicioBluetooth {
 
-    //TODO terminar estados
-    //TODO conectar ambos dispositivos, enviar mensajes entre dispositivos
-
     final BluetoothAdapter bluetoothAdapter;
     private final Activity mCurrentActivity;
     private final Handler mHandler;

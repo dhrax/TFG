@@ -25,8 +25,6 @@ public class MenuPrincipalScreen implements Screen {
     Juego juego;
     Stage stage;
 
-    Skin skin;
-
     TextButton btJugar;
     TextButton btRanking;
     TextButton btAjustes;
@@ -45,11 +43,9 @@ public class MenuPrincipalScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
-
         Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
 
-        btJugar = new TextButton("Jugar", skin);
+        btJugar = new TextButton("Jugar", juego.manager.getSkin());
         btJugar.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -58,15 +54,15 @@ public class MenuPrincipalScreen implements Screen {
             }
         });
 
-        btRanking = new TextButton("Ranking", skin);
+        btRanking = new TextButton("Ranking", juego.manager.getSkin());
         btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //TODO solucionar subida de puntuaciones, BBDD...
+                //TODO crear RankingScreen
             }
         });
 
-        btAjustes = new TextButton("Ajustes", skin);
+        btAjustes = new TextButton("Ajustes", juego.manager.getSkin());
         btAjustes.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
