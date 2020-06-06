@@ -19,7 +19,6 @@ public class ConectarJugadoresScreen implements Screen {
 
     ScrollPane scrollPane;
     Juego juego;
-    Skin skin;
     Stage stage;
     List<String> list;
     Array<String> dispositivosConectados;
@@ -39,13 +38,11 @@ public class ConectarJugadoresScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
-
-        list = new List<>(skin);
+        list = new List<>(juego.manager.getSkin());
         list.setItems(dispositivosConectados);
 
 
-        TextButton button = new TextButton("Conectar", skin);
+        TextButton button = new TextButton("Conectar", juego.manager.getSkin());
         button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 if(list.getItems().size > 0){
@@ -57,7 +54,7 @@ public class ConectarJugadoresScreen implements Screen {
             }
         });
 
-        TextButton hostButton = new TextButton("Host", skin);
+        TextButton hostButton = new TextButton("Host", juego.manager.getSkin());
         hostButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 juego.stop();
@@ -65,7 +62,7 @@ public class ConectarJugadoresScreen implements Screen {
                 juego.empezarAEscuchar();
             }
         });
-        TextButton listenButton = new TextButton("Descubrir", skin);
+        TextButton listenButton = new TextButton("Descubrir", juego.manager.getSkin());
         listenButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 juego.stop();

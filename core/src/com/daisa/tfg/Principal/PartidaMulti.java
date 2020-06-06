@@ -162,9 +162,8 @@ public class PartidaMulti implements Screen, InputProcessor {
                 personaje.getArrayExplosiones().add(new Explosion());
                 personaje.setVida(personaje.getVida() - balaRival.getTamanoBala());
                 if (personaje.getVida() <= 0) {
-                    //TODO añadir el marcador (pantalla de seleccion de personaje)
-                    //fixme llamar al dispose del rival¿?
                     Gdx.app.debug("DEBUG", "Me han matado");
+                    juego.setRivalPuntuacion(juego.getRivalPuntuacion() + 1);
                     juego.write("fin");
                     juego.setScreen(new ElegirPersonaje(juego));
                     this.dispose();

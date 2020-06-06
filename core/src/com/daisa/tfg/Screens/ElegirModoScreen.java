@@ -17,10 +17,7 @@ public class ElegirModoScreen implements Screen {
     Stage stage;
     Juego juego;
 
-    Skin skin;
-
     TextButton btJugar;
-    TextButton btRanking;
     TextButton btAjustes;
 
     public ElegirModoScreen(Juego juego) {
@@ -36,20 +33,8 @@ public class ElegirModoScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        skin = juego.manager.managerJuego.get("skin/glassy-ui.json");
-
-        btJugar = new TextButton("Modo Solitario", skin);
+        btJugar = new TextButton("Cooperativo", juego.manager.getSkin());
         btJugar.addListener(new ClickListener(){
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                //TODO quitar si finalmente solo hay un personaje
-                Gdx.app.debug("DEBUG", "ElegirModoScreen::Se crea la Screen ElegirPersonaje");
-                juego.setScreen(new ElegirPersonaje(juego));
-            }
-        });
-
-        btRanking = new TextButton("Cooperativo", skin);
-        btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 Gdx.app.debug("DEBUG", "ElegirModoScreen::Se comprueba si el Bluetooth esta encendido");
@@ -64,7 +49,7 @@ public class ElegirModoScreen implements Screen {
             }
         });
 
-        btAjustes = new TextButton("Tutorial", skin);
+        btAjustes = new TextButton("Tutorial", juego.manager.getSkin());
         btAjustes.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -74,10 +59,7 @@ public class ElegirModoScreen implements Screen {
         });
 
         tabla.row().padBottom(30).width(700).height(120);
-        tabla.add(btJugar).width(700).height(120);
-
-        tabla.row().padBottom(30).width(700).height(120);
-        tabla.add(btRanking);
+        tabla.add(btJugar);
 
         tabla.row().padBottom(30).width(700).height(120);
         tabla.add(btAjustes);
