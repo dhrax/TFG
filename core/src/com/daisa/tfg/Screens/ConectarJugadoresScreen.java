@@ -74,14 +74,27 @@ public class ConectarJugadoresScreen implements Screen {
 
         scrollPane = new ScrollPane(list);
 
-        tabla.row().height(200).width(500);
-        tabla.add(scrollPane);
-        tabla.row().height(200).width(500);
-        tabla.add(button);
-        tabla.row().height(200).width(500);
-        tabla.add(hostButton);
-        tabla.row().height(200).width(500);
-        tabla.add(listenButton);
+        Table tablaScrollPane = new Table();
+        Table tablaBotones = new Table();
+
+        tablaScrollPane.row();
+        tablaScrollPane.add(scrollPane).height(800).width(750);
+
+        tablaBotones.row();
+        tablaBotones.add(button).height(200).width(700);
+        tablaBotones.row();
+        tablaBotones.add().height(100);
+        tablaBotones.row();
+        tablaBotones.add(hostButton).height(200).width(700);
+        tablaBotones.row();
+        tablaBotones.add().height(100);
+        tablaBotones.row();
+        tablaBotones.add(listenButton).height(200).width(700);
+
+        tabla.row();
+        tabla.add(tablaScrollPane);
+        tabla.add().width(250);
+        tabla.add(tablaBotones);
 
         Gdx.input.setInputProcessor(stage);
 

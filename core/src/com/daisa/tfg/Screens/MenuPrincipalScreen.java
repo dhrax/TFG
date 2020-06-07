@@ -53,7 +53,9 @@ public class MenuPrincipalScreen implements Screen {
         btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //TODO crear RankingScreen
+                Gdx.app.debug("DEBUG", "MenuPrincipalScreen::Se crea la Screen RankingScreen");
+                juego.rankingScreen = new RankingScreen(juego);
+                juego.setScreen(juego.rankingScreen);
             }
         });
 
