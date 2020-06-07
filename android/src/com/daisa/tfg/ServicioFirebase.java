@@ -160,11 +160,11 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
             correcto = false;
             pintarToast("El nombre de usuario no puede contener ninguno de los siguientes caracteres especiales (@, $, €, &)");
         } else if (nombreUsuario.toUpperCase().equals(nombreUsuario)) {
-            correcto = true;
-            pintarToast("La contraseña tiene que contener al menos una minúscula");
+            correcto = false;
+            pintarToast("El nombre de usuario tiene que contener al menos una minúscula");
         } else if (nombreUsuario.toLowerCase().equals(nombreUsuario)) {
-            correcto = true;
-            pintarToast("La contraseña tiene que contener al menos una mayúscula");
+            correcto = false;
+            pintarToast("El nombre de usuario tiene que contener al menos una mayúscula");
         }
 
         return correcto;

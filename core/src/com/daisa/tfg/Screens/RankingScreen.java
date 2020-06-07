@@ -8,11 +8,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Array;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 
 import java.util.ArrayList;
@@ -41,10 +43,10 @@ public class RankingScreen implements Screen {
         stage.addActor(tabla);
         tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
-        list = new List<>(juego.manager.getSkin());
+        list = new List<>(juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         list.setItems(puntuaciones);
 
-        TextButton button = new TextButton("Volver", juego.manager.getSkin());
+        TextButton button = new TextButton("Volver", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 juego.setScreen(new MenuPrincipalScreen(juego));
