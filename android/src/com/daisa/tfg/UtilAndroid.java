@@ -1,13 +1,8 @@
 package com.daisa.tfg;
 
-import android.app.Activity;
-import android.widget.Toast;
-
-import com.daisa.tfg.principal.Juego;
-
 public class UtilAndroid {
-    Activity activity;
-    Juego juego;
+
+    public static String NOMBRE_DISPOSITIVO = "nombre de dispositivo";
 
     boolean hayNumerosEnString(String contrasena) {
         int pos = 0;

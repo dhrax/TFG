@@ -12,17 +12,18 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.daisa.tfg.constantes.ConstantesBluetooth;
-import com.daisa.tfg.principal.Juego;
+import com.daisa.tfg.Constantes.ConstantesBluetooth;
+import com.daisa.tfg.Principal.Juego;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.daisa.tfg.ServicioBluetooth.EstadosBluetooth.*;
 
-public class ServicioBluetooth {
+public class ServicioBluetooth implements Juego.BluetoothCallBack {
 
     final BluetoothAdapter bluetoothAdapter;
     private final Activity mCurrentActivity;
@@ -43,6 +44,8 @@ public class ServicioBluetooth {
         this.androidLauncher = androidLauncher;
         mHandler = handler;
 
+        juego.setBluetoothCallBack(this);
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         //Si el adaptador es nulo, significa que no se soporta el Bluetooth
@@ -54,10 +57,6 @@ public class ServicioBluetooth {
         estado = NULO;
     }
 
-    public void activarBluetooth() {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            mCurrentActivity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
-    }
 
     public void descubirDispositivos(){
         Log.d("DEBUG", "ServicioBluetooth::Se comienza a buscar dispositivos");
@@ -335,7 +334,7 @@ public class ServicioBluetooth {
         Log.d("DEBUG", "ServicioBluetooth::Se envia mensaje del dispositivo al que se ha conectado");
         Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO);
         Bundle bundle = new Bundle();
-        bundle.putString("nombre de dispositivo", device.getName());
+        bundle.putString(UtilAndroid.NOMBRE_DISPOSITIVO, device.getName());
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
@@ -380,9 +379,63 @@ public class ServicioBluetooth {
         juego.conexionPerdida();
     }
 
+    @Override
+    public void activityForResultBluetooth() {
+        Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        mCurrentActivity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
+    }
+
+    @Override
+    public void conectarDispositivosBluetooth(String nombreDispositivo) {
+        Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
+
+        ArrayList<BluetoothDevice> list = new ArrayList<>(androidLauncher.SetDispositivosVisibles);
+
+        int pos = -1;
+        for (BluetoothDevice device : list) {
+            if (device.getName().equals(nombreDispositivo)) {
+                pos = list.indexOf(device);
+            }
+        }
+        conectarDispositivos(list.get(pos));
+    }
+
+    @Override
+    public void habilitarSerDescubiertoBluetooth() {
+        serDescubierto();
+    }
+
+    @Override
+    public boolean bluetoothEncendido() {
+        Log.d("DEBUG", "¿Bluetooth Encencido? " + bluetoothAdapter.isEnabled());
+        return bluetoothAdapter.isEnabled();
+    }
+
+    @Override
+    public void descubrirDispositivosBluetooth() {
+        descubirDispositivos();
+    }
+
+    @Override
+    public void empezarAEscucharBluetooth() {
+        escuchar();
+    }
+
+    @Override
+    public void write(String string) {
+        write(string.getBytes());
+    }
+
+    @Override
+    public void stop() {
+        androidLauncher.SetDispositivosVisibles.clear();
+        AndroidLauncher.nombreDispositivosVisibles.clear();
+        pararHilos();
+    }
+
     //TODO LLAMARLO EN EL SCREEN CADA VEZ QUE SE PULSA UN BOTON
     public synchronized void
-    stop() {
+    pararHilos() {
         if (hiloConectar != null) {
             hiloConectar.cancel();
             hiloConectar = null;
@@ -401,4 +454,6 @@ public class ServicioBluetooth {
     public enum EstadosBluetooth{
         CONECTADO, CONECTANDO, ESCUCHANDO, NULO
     }
+
+
 }

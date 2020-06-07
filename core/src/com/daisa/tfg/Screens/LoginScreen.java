@@ -1,10 +1,9 @@
-package com.daisa.tfg.screens;
+package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -12,17 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
-import com.daisa.tfg.principal.Juego;
+import com.daisa.tfg.Principal.Juego;
 
-//TODO buscar un tipo de fuente
-//TODO Cuando se tenga el tipo de fuente y la skin, cambiar VisTextField por TextField
-//TODO modularizar
 public class LoginScreen implements Screen {
 
     Juego juego;
@@ -31,7 +26,6 @@ public class LoginScreen implements Screen {
     Label lbNombreJuego;
     Label lbUsuario;
     Label lbContra;
-    //TODO hacer mas grande el tamaño de la letro dentro de los VisTextField
     TextField tfNombreUsuario;
     TextField tfContraseñaUsuario;
     TextButton btRegistro;
@@ -41,7 +35,6 @@ public class LoginScreen implements Screen {
     boolean contraIntroducida = true;
     String nombAlmacenado = "";
     String contraAlmacenada = "";
-    TextureRegion fondo;
 
     public LoginScreen(Juego juego) {
         this.juego = juego;
@@ -58,9 +51,7 @@ public class LoginScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        //TODO cambiar imagen de fondo
-        fondo = new TextureRegion(new Texture("fondo.jpg"));
-        tabla.setBackground(new TiledDrawable(fondo));
+        tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
         Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
         Image imgExclamacion = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
@@ -77,7 +68,6 @@ public class LoginScreen implements Screen {
         CharSequence nombContra = "Contrasena";
         lbContra = new Label(nombContra, juego.manager.getEstiloLabel());
         lbContra.setFontScale(2);
-
 
         tfNombreUsuario = new TextField(nombAlmacenado, juego.manager.getEstiloTextField());
         nombAlmacenado = "";
@@ -192,7 +182,6 @@ public class LoginScreen implements Screen {
 
         stage.act(delta);
         stage.draw();
-
     }
 
     @Override

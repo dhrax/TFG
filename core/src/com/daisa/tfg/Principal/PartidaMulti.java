@@ -1,25 +1,20 @@
-package com.daisa.tfg.principal;
+package com.daisa.tfg.Principal;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.daisa.tfg.balas.Bala;
-import com.daisa.tfg.constantes.ConstantesJuego;
-import com.daisa.tfg.personajes.Personaje;
-import com.daisa.tfg.personajes.PersonajeCirc;
-import com.daisa.tfg.personajes.PersonajePol;
-import com.daisa.tfg.screens.ElegirPersonaje;
-import com.daisa.tfg.util.Explosion;
-import com.daisa.tfg.util.FondoAnimado;
+import com.daisa.tfg.Balas.Bala;
+import com.daisa.tfg.Constantes.ConstantesJuego;
+import com.daisa.tfg.Personajes.Personaje;
+import com.daisa.tfg.Personajes.PersonajeCirc;
+import com.daisa.tfg.Personajes.PersonajePol;
+import com.daisa.tfg.Screens.ElegirPersonajeScreen;
+import com.daisa.tfg.Util.Explosion;
+import com.daisa.tfg.Util.FondoAnimado;
 
 public class PartidaMulti implements Screen, InputProcessor {
 
@@ -45,7 +40,7 @@ public class PartidaMulti implements Screen, InputProcessor {
 
         color = 1;
 
-        fondoAnimado = new FondoAnimado();
+        fondoAnimado = new FondoAnimado("Fondos/fondoAnimado.jpg");
     }
 
     private void instanciarPersonaje(int idPJ, Array<String> rutaTexturas) {
@@ -86,7 +81,7 @@ public class PartidaMulti implements Screen, InputProcessor {
         moverPersonaje(delta);
         recargar();
         comprobarToquePantalla();
-        moverBalas();
+        moverBalas(delta);
         comprobarColisiones(delta);
         comprobarLimites();
     }
@@ -140,9 +135,16 @@ public class PartidaMulti implements Screen, InputProcessor {
         personaje.actualizarFrame(delta);
     }
 
-    private void moverBalas() {
+    private void moverBalas(float delta) {
         personaje.moverBalas(personaje.getBalas());
         personaje.moverBalasRival(Personaje.getBalasRival());
+        //fixme normalizar
+        for(Bala bala : personaje.getBalas()){
+            bala.actualizarFrame(delta);
+        }
+        for(Bala bala : Personaje.getBalasRival()){
+            bala.actualizarFrame(delta);
+        }
     }
 
 
@@ -165,7 +167,7 @@ public class PartidaMulti implements Screen, InputProcessor {
                     Gdx.app.debug("DEBUG", "Me han matado");
                     juego.setRivalPuntuacion(juego.getRivalPuntuacion() + 1);
                     juego.write("fin");
-                    juego.setScreen(new ElegirPersonaje(juego));
+                    juego.setScreen(new ElegirPersonajeScreen(juego));
                     this.dispose();
                 }
             }

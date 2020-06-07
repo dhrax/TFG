@@ -1,16 +1,17 @@
-package com.daisa.tfg.balas;
+package com.daisa.tfg.Balas;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 public class BalaPol extends Bala {
 
     Polygon pol;
     float[] arrVertices;
 
-    public BalaPol(Vector2 posicion, float velocidad, TextureRegion aspecto, int idPj, int tamanoBala) {
+    public BalaPol(Vector2 posicion, float velocidad, Array<TextureRegion> aspecto, int idPj, int tamanoBala) {
         super(posicion, velocidad, aspecto, idPj, tamanoBala);
         switch (idPj) {
             //Trinagulo

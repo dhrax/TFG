@@ -1,4 +1,4 @@
-package com.daisa.tfg.screens;
+package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -15,7 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.daisa.tfg.principal.Juego;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.daisa.tfg.Principal.Juego;
 
 public class AjustesScreen implements Screen {
 
@@ -41,9 +42,7 @@ public class AjustesScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        juego.manager.cargaSkin();
-        juego.manager.managerJuego.finishLoading();
-
+        tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
         titleLabel = new Label( "Preferencias", juego.manager.getSkin() );
         titleLabel.setFontScale(4);

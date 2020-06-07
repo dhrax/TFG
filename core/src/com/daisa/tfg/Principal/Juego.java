@@ -1,19 +1,22 @@
-package com.daisa.tfg.principal;
+package com.daisa.tfg.Principal;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.daisa.tfg.personajes.Personaje;
-import com.daisa.tfg.screens.ConectarJugadoresScreen;
-import com.daisa.tfg.screens.ElegirModoScreen;
-import com.daisa.tfg.screens.ElegirPersonaje;
-import com.daisa.tfg.screens.LoginScreen;
-import com.daisa.tfg.screens.MenuPrincipalScreen;
-import com.daisa.tfg.util.JuegoAssetManager;
+import com.daisa.tfg.Personajes.Personaje;
+import com.daisa.tfg.Screens.ConectarJugadoresScreen;
+import com.daisa.tfg.Screens.ElegirModoScreen;
+import com.daisa.tfg.Screens.ElegirPersonajeScreen;
+import com.daisa.tfg.Screens.LoginScreen;
+import com.daisa.tfg.Screens.MenuPrincipalScreen;
+import com.daisa.tfg.Util.JuegoAssetManager;
 
 public class Juego extends Game {
 
@@ -26,8 +29,7 @@ public class Juego extends Game {
 
     public JuegoAssetManager manager;
 
-    // Local variable to hold the callback implementation
-    private MiJuegoCallBack myGameCallback;
+    private BluetoothCallBack bluetoothCallBack;
     private FirebaseCallBack firebaseCallBack;
     private Array<String> nombreDispositivosVisibles;
     public ConectarJugadoresScreen conectarJugadoresScreen;
@@ -37,9 +39,7 @@ public class Juego extends Game {
     private int miPuntuacion = 0, rivalPuntuacion = 0;
     private String nombreUsuario = null;
 
-    public Array<String> getNombreDispositivosVisibles() {
-        return nombreDispositivosVisibles;
-    }
+    private TextureRegion fondoMenu;
 
     @Override
     public void create() {
@@ -53,15 +53,17 @@ public class Juego extends Game {
 
         manager = new JuegoAssetManager();
 
+        fondoMenu = new TextureRegion(new Sprite(new Texture("Fondos/fondoMenus.jpg")));
+
         setScreen(new LoginScreen(juego));
     }
 
     public boolean estaBluetoothEncencido() {
-        return myGameCallback.bluetoothEncendido();
+        return bluetoothCallBack.bluetoothEncendido();
     }
 
     public void descubrirDispositivos() {
-        myGameCallback.descubrirDispositivosBluetooth();
+        bluetoothCallBack.descubrirDispositivosBluetooth();
     }
 
     public void refrescarListaDispositivos() {
@@ -73,15 +75,14 @@ public class Juego extends Game {
     }
 
     public void empezarAEscuchar() {
-        myGameCallback.empezarAEscucharBluetooth();
+        bluetoothCallBack.empezarAEscucharBluetooth();
     }
 
     public void comenzarPartida() {
         this.write("true");
-
     }
 
-    public void mensajeRecibido(String readMessage) {
+    public void rivalPreparado(String readMessage) {
         Gdx.app.debug("MENSAJE RECIBIDO", readMessage);
         rivalPreparado = Boolean.parseBoolean(readMessage);
     }
@@ -102,8 +103,6 @@ public class Juego extends Game {
         }catch(Exception e){
             Gdx.app.debug("DEBUG", "[ERROR] Error al convertir los datos dela bala rival");
         }
-
-
     }
 
     public void conexionPerdida() {
@@ -114,7 +113,6 @@ public class Juego extends Game {
             }
         });
     }
-
 
     public void irAMenuPrincipal() {
         Gdx.app.postRunnable(new Runnable() {
@@ -138,7 +136,7 @@ public class Juego extends Game {
         firebaseCallBack.pintarToast(mensaje);
     }
 
-    public interface MiJuegoCallBack{
+    public interface BluetoothCallBack {
         void activityForResultBluetooth();
         void conectarDispositivosBluetooth(String nombreDispositivo);
         void habilitarSerDescubiertoBluetooth();
@@ -150,20 +148,23 @@ public class Juego extends Game {
     }
 
     public void activarBluetooth(){
-        myGameCallback.activityForResultBluetooth();
+        bluetoothCallBack.activityForResultBluetooth();
     }
+
     public void conectarBluetooth(String nombreDispositivo){
-        myGameCallback.conectarDispositivosBluetooth(nombreDispositivo);
+        bluetoothCallBack.conectarDispositivosBluetooth(nombreDispositivo);
     }
+
     public void habilitarSerDescubierto(){
-        myGameCallback.habilitarSerDescubiertoBluetooth();
+        bluetoothCallBack.habilitarSerDescubiertoBluetooth();
     }
+
     public void write(String string){
-        myGameCallback.write(string);
+        bluetoothCallBack.write(string);
     }
 
     public void stop(){
-        myGameCallback.stop();
+        bluetoothCallBack.stop();
     }
 
     public interface FirebaseCallBack{
@@ -175,6 +176,7 @@ public class Juego extends Game {
     public void comprobacionUsuarioLIBGDX(String nombreUsuario, String contrasena){
         firebaseCallBack.comprobacionUsuario(nombreUsuario, contrasena);
     }
+
     public void usuarioYaExisteLIBGDX(String nombreUsuario, String contrasena) {
         firebaseCallBack.usuarioYaExiste(nombreUsuario, contrasena);
     }
@@ -188,16 +190,8 @@ public class Juego extends Game {
         manager.managerJuego.dispose();
     }
 
-    public void setMyGameCallback(MiJuegoCallBack callback) {
-        myGameCallback = callback;
-    }
-
-    public MiJuegoCallBack getMyGameCallback() {
-        return myGameCallback;
-    }
-
-    public FirebaseCallBack getFirebaseCallBack() {
-        return firebaseCallBack;
+    public void setBluetoothCallBack(BluetoothCallBack callback) {
+        bluetoothCallBack = callback;
     }
 
     public void setFirebaseCallBack(FirebaseCallBack firebaseCallBack) {
@@ -208,7 +202,7 @@ public class Juego extends Game {
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                setScreen(new ElegirPersonaje(juego));
+                setScreen(new ElegirPersonajeScreen(juego));
             }
         });
     }
@@ -235,5 +229,9 @@ public class Juego extends Game {
 
     public void setNombreUsuario(String nombreUsuario) {
         this.nombreUsuario = nombreUsuario;
+    }
+
+    public TextureRegion getFondoMenu() {
+        return fondoMenu;
     }
 }

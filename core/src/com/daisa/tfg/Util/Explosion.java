@@ -1,4 +1,4 @@
-package com.daisa.tfg.util;
+package com.daisa.tfg.Util;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
-import com.daisa.tfg.constantes.ConstantesJuego;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 
 public class Explosion {
 

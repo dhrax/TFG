@@ -1,11 +1,11 @@
-package com.daisa.tfg.util;
+package com.daisa.tfg.Util;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.daisa.tfg.constantes.ConstantesJuego;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 
 public class FondoAnimado {
 
@@ -17,8 +17,8 @@ public class FondoAnimado {
     float imageScale;
     float altoRelativo;
 
-    public FondoAnimado () {
-        image = new TextureRegion(new Sprite(new Texture("fondoAnimado.jpg")));
+    public FondoAnimado (String rutaFondo) {
+        image = new TextureRegion(new Sprite(new Texture(rutaFondo)));
 
         speed = DEFAULT_SPEED;
         imageScale = (float) ConstantesJuego.ANCHO_PANTALLA / image.getRegionWidth();
@@ -47,5 +47,9 @@ public class FondoAnimado {
     public void pintar(SpriteBatch batch){
         batch.draw(image, 0, y1, ConstantesJuego.ANCHO_PANTALLA, altoRelativo);
         batch.draw(image, 0, y2, ConstantesJuego.ANCHO_PANTALLA, altoRelativo);
+    }
+
+    public TextureRegion getImage() {
+        return image;
     }
 }

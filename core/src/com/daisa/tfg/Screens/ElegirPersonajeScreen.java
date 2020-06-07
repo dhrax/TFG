@@ -1,4 +1,4 @@
-package com.daisa.tfg.screens;
+package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
@@ -15,12 +15,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Array;
-import com.daisa.tfg.principal.Juego;
-import com.daisa.tfg.principal.PartidaMulti;
-import com.daisa.tfg.util.SimpleDirectionGestureDetector;
+import com.daisa.tfg.Principal.Juego;
+import com.daisa.tfg.Principal.PartidaMulti;
+import com.daisa.tfg.Util.SimpleDirectionGestureDetector;
 
-public class ElegirPersonaje implements Screen, InputProcessor {
+public class ElegirPersonajeScreen implements Screen, InputProcessor {
     Juego juego;
 
     Array<Image> regionsPequenos = new Array<>();
@@ -32,7 +33,7 @@ public class ElegirPersonaje implements Screen, InputProcessor {
     boolean esperando;
     Array<Array<String>> rutaMatrizAnimaciones = new Array<>();
 
-    public ElegirPersonaje(Juego juego) {
+    public ElegirPersonajeScreen(Juego juego) {
         this.juego = juego;
         inicializar();
         mostrando = 0;
@@ -94,6 +95,7 @@ public class ElegirPersonaje implements Screen, InputProcessor {
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
+        tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
         regionGrandes.get(mostrando).addListener(new ClickListener() {
             @Override
@@ -139,7 +141,6 @@ public class ElegirPersonaje implements Screen, InputProcessor {
             tabla.add(label);
         }
 
-        //fixme solucionar problema para cambiar a las imagenes al rotarlas
         if (!esperando) {
             InputMultiplexer inputMultiplexer = new InputMultiplexer(gestosProcesador, stage);
             Gdx.input.setInputProcessor(inputMultiplexer);

@@ -1,4 +1,4 @@
-package com.daisa.tfg.personajes;
+package com.daisa.tfg.Personajes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Circle;

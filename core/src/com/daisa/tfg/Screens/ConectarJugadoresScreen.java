@@ -1,4 +1,4 @@
-package com.daisa.tfg.screens;
+package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
@@ -12,8 +12,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Array;
-import com.daisa.tfg.principal.Juego;
+import com.daisa.tfg.Principal.Juego;
 
 public class ConectarJugadoresScreen implements Screen {
 
@@ -37,6 +38,7 @@ public class ConectarJugadoresScreen implements Screen {
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
+        tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
         list = new List<>(juego.manager.getSkin());
         list.setItems(dispositivosConectados);

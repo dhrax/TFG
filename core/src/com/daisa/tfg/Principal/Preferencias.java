@@ -1,4 +1,4 @@
-package com.daisa.tfg.principal;
+package com.daisa.tfg.Principal;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;

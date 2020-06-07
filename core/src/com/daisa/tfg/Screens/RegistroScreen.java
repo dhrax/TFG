@@ -1,4 +1,4 @@
-package com.daisa.tfg.screens;
+package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
@@ -6,24 +6,21 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
-import com.daisa.tfg.principal.Juego;
+import com.daisa.tfg.Principal.Juego;
 
 public class RegistroScreen implements Screen {
 
     Juego juego;
     Stage stage;
-    TextureRegion fondo;
     Label lbNombre;
     Label lbContra;
     Label lbContraRepe;
@@ -57,15 +54,11 @@ public class RegistroScreen implements Screen {
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        //TODO cambiar imagen de fondo
-        fondo = new TextureRegion(new Texture("fondo.jpg"));
-        tabla.setBackground(new TiledDrawable(fondo));
+        tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
         Image imgExclamacion = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
         Image imgExclamacion2 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
         Image imgExclamacion3 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
-
-
 
         CharSequence nombUsuario = "Nombre:";
         lbNombre = new Label(nombUsuario, juego.manager.getEstiloLabel());
@@ -104,7 +97,6 @@ public class RegistroScreen implements Screen {
         tfContraUsuario = new TextField(contraAlmacenada, juego.manager.getEstiloTextField());
         contraAlmacenada = "";
 
-
         tfContraUsuario.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -125,7 +117,6 @@ public class RegistroScreen implements Screen {
 
         tfContraUsuarioRepe = new TextField(contraAlmacenadaRepe, juego.manager.getEstiloTextField());
         contraAlmacenadaRepe = "";
-
 
         tfContraUsuarioRepe.addListener(new ClickListener() {
             @Override

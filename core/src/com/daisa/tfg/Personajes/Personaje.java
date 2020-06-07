@@ -1,4 +1,4 @@
-package com.daisa.tfg.personajes;
+package com.daisa.tfg.Personajes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,12 +12,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.daisa.tfg.balas.Bala;
-import com.daisa.tfg.balas.BalaCirc;
-import com.daisa.tfg.balas.BalaPol;
-import com.daisa.tfg.balas.BalaRect;
-import com.daisa.tfg.constantes.ConstantesJuego;
-import com.daisa.tfg.util.Explosion;
+import com.daisa.tfg.Balas.Bala;
+import com.daisa.tfg.Balas.BalaCirc;
+import com.daisa.tfg.Balas.BalaPol;
+import com.daisa.tfg.Balas.BalaRect;
+import com.daisa.tfg.Constantes.ConstantesJuego;
+import com.daisa.tfg.Util.Explosion;
+import com.daisa.tfg.Util.Util;
 
 import java.lang.reflect.Field;
 
@@ -69,7 +70,7 @@ public abstract class Personaje {
         balasRival = new Array<>();
 
         hudCorazones = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Vidas/corazon.png"))));
-        hubBalas = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/b" + idPj + ".png"))));
+        hubBalas = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/" + idPj + "/b1.png"))));
 
         municion = ConstantesJuego.MUNICION_MAXIMA;
         momentoUltimoDisparo = TimeUtils.millis();
@@ -136,144 +137,32 @@ public abstract class Personaje {
         return velocidad;
     }
 
-    public void setVelocidad(float velocidad) {
-        this.velocidad = velocidad;
-    }
-
-    public static float getVelocidadBalas() {
-        return velocidadBalas;
-    }
-
-    public static void setVelocidadBalas(float velocidadBalas) {
-        Personaje.velocidadBalas = velocidadBalas;
-    }
-
     public Vector2 getPosicion() {
         return posicion;
-    }
-
-    public void setPosicion(Vector2 posicion) {
-        this.posicion = posicion;
-    }
-
-    public EstadosPersonaje getEstado() {
-        return estado;
     }
 
     public void setEstado(EstadosPersonaje estado) {
         this.estado = estado;
     }
 
-    public float getStateTime() {
-        return stateTime;
-    }
-
-    public void setStateTime(float stateTime) {
-        this.stateTime = stateTime;
-    }
-
     public int getIdPj() {
         return idPj;
-    }
-
-    public void setIdPj(int idPj) {
-        this.idPj = idPj;
     }
 
     public Array<Bala> getBalas() {
         return balas;
     }
 
-    public void setBalas(Array<Bala> balas) {
-        this.balas = balas;
-    }
-
     public static Array<Bala> getBalasRival() {
         return balasRival;
-    }
-
-    public static void setBalasRival(Array<Bala> balasRival) {
-        Personaje.balasRival = balasRival;
-    }
-
-    public TextureRegion getAspectoActual() {
-        return aspectoActual;
-    }
-
-    public void setAspectoActual(TextureRegion aspectoActual) {
-        this.aspectoActual = aspectoActual;
-    }
-
-    public Animation getAnimacionDerecha() {
-        return animacionDerecha;
-    }
-
-    public void setAnimacionDerecha(Animation animacionDerecha) {
-        this.animacionDerecha = animacionDerecha;
-    }
-
-    public Animation getAnimacionIzquierda() {
-        return animacionIzquierda;
-    }
-
-    public void setAnimacionIzquierda(Animation animacionIzquierda) {
-        this.animacionIzquierda = animacionIzquierda;
-    }
-
-    public Array<TextureRegion> getTexturasDerecha() {
-        return texturasDerecha;
-    }
-
-    public void setTexturasDerecha(Array<TextureRegion> texturasDerecha) {
-        this.texturasDerecha = texturasDerecha;
-    }
-
-    public Array<TextureRegion> getTexturasIzquierda() {
-        return texturasIzquierda;
-    }
-
-    public void setTexturasIzquierda(Array<TextureRegion> texturasIzquierda) {
-        this.texturasIzquierda = texturasIzquierda;
-    }
-
-    public TextureRegion getAspectoBasico() {
-        return aspectoBasico;
-    }
-
-    public void setAspectoBasico(TextureRegion aspectoBasico) {
-        this.aspectoBasico = aspectoBasico;
-    }
-
-    public TextureRegion getHudCorazones() {
-        return hudCorazones;
-    }
-
-    public void setHudCorazones(TextureRegion hudCorazones) {
-        this.hudCorazones = hudCorazones;
-    }
-
-    public float getRelacionAspecto() {
-        return relacionAspecto;
-    }
-
-    public void setRelacionAspecto(float relacionAspecto) {
-        this.relacionAspecto = relacionAspecto;
     }
 
     public float getAnchoRelativoAspecto() {
         return anchoRelativoAspecto;
     }
 
-    public void setAnchoRelativoAspecto(float anchoRelativoAspecto) {
-        this.anchoRelativoAspecto = anchoRelativoAspecto;
-    }
-
     public float getAltoRelativoAspecto() {
         return altoRelativoAspecto;
-    }
-
-    public void setAltoRelativoAspecto(float altoRelativoAspecto) {
-        this.altoRelativoAspecto = altoRelativoAspecto;
     }
 
     public abstract void mover(Vector2 direccion);
@@ -336,17 +225,17 @@ public abstract class Personaje {
 
     private static Bala tipoBala(int idPj, Vector2 posicionRelativaRecibido, int tamanoBala) {
         Bala bala;
-        TextureRegion aspecto = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/b" + idPj + ".png"))));
+        Array<TextureRegion> arrayTexturas = Util.listFilesForFolder(Gdx.files.internal("Balas/" + idPj));
         switch (idPj) {
             //Balas con forma rectangular
             case 1:
             case 4:
             case 7:
-                bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, arrayTexturas, idPj, tamanoBala);
                 break;
             //Balas con forma circular
             case 2:
-                bala = new BalaCirc(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                bala = new BalaCirc(posicionRelativaRecibido, velocidadBalas, arrayTexturas, idPj, tamanoBala);
                 break;
             //Balas con forma poligonal
             case 3:
@@ -355,11 +244,11 @@ public abstract class Personaje {
             case 8:
             case 9:
             case 10:
-                bala = new BalaPol(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                bala = new BalaPol(posicionRelativaRecibido, velocidadBalas, arrayTexturas, idPj, tamanoBala);
                 break;
             default:
-                aspecto = new TextureRegion(new Sprite(new Texture(Gdx.files.internal("Balas/b1.png"))));
-                bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, aspecto, idPj, tamanoBala);
+                arrayTexturas = Util.listFilesForFolder(Gdx.files.internal("Balas/1"));
+                bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, arrayTexturas, idPj, tamanoBala);
                 break;
         }
         return bala;

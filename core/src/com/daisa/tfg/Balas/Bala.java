@@ -1,6 +1,7 @@
-package com.daisa.tfg.balas;
+package com.daisa.tfg.Balas;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
@@ -8,10 +9,11 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.daisa.tfg.constantes.ConstantesJuego;
-import com.daisa.tfg.personajes.Personaje;
-import com.daisa.tfg.personajes.PersonajeCirc;
-import com.daisa.tfg.personajes.PersonajePol;
+import com.badlogic.gdx.utils.Array;
+import com.daisa.tfg.Constantes.ConstantesJuego;
+import com.daisa.tfg.Personajes.Personaje;
+import com.daisa.tfg.Personajes.PersonajeCirc;
+import com.daisa.tfg.Personajes.PersonajePol;
 
 import java.lang.reflect.Field;
 
@@ -28,13 +30,19 @@ public abstract class Bala {
     private int tamanoBala;
     private int idPj;
 
-    public Bala(Vector2 posicion, float velocidad, TextureRegion aspecto, int idPj, int tamanoBala) {
+    Animation animation;
+    Array<TextureRegion> arrayTexturas;
+    private float stateTime;
+
+    public Bala(Vector2 posicion, float velocidad, Array<TextureRegion> arrayTexturas, int idPj, int tamanoBala) {
         this.posicion = posicion;
         this.velocidad = velocidad;
-        this.aspecto = aspecto;
+        this.arrayTexturas = arrayTexturas;
         this.idPj = idPj;
 
-        relacionAspecto = (float) this.aspecto.getRegionWidth() / this.aspecto.getRegionHeight();
+        //todo mejorar
+        relacionAspecto = (float) this.arrayTexturas.get(0).getRegionWidth() / this.arrayTexturas.get(0).getRegionHeight();
+        animation = new Animation(0.2f, arrayTexturas);
 
         anchoRelativoAspecto = ConstantesJuego.PPU * relacionAspecto * tamanoBala;
         altoRelativoAspecto = ConstantesJuego.PPU * tamanoBala;
@@ -46,80 +54,33 @@ public abstract class Bala {
         return posicion;
     }
 
-    public void setPosicion(Vector2 posicion) {
-        this.posicion = posicion;
-    }
-
-    public TextureRegion getAspecto() {
-        return aspecto;
-    }
-
-    public void setAspecto(TextureRegion aspecto) {
-        this.aspecto = aspecto;
-    }
-
     public float getVelocidad() {
         return velocidad;
-    }
-
-    public void setVelocidad(float velocidad) {
-        this.velocidad = velocidad;
-    }
-
-    public float getRelacionAspecto() {
-        return relacionAspecto;
-    }
-
-    public void setRelacionAspecto(float relacionAspecto) {
-        this.relacionAspecto = relacionAspecto;
     }
 
     public float getAnchoRelativoAspecto() {
         return anchoRelativoAspecto;
     }
 
-    public void setAnchoRelativoAspecto(float anchoRelativoAspecto) {
-        this.anchoRelativoAspecto = anchoRelativoAspecto;
-    }
-
     public float getAltoRelativoAspecto() {
         return altoRelativoAspecto;
-    }
-
-    public void setAltoRelativoAspecto(float altoRelativoAspecto) {
-        this.altoRelativoAspecto = altoRelativoAspecto;
-    }
-
-    public static Vector2 getCentro() {
-        return centro;
-    }
-
-    public static Vector2 getVec1() {
-        return vec1;
-    }
-
-    public static Vector2 getVec2() {
-        return vec2;
     }
 
     public int getTamanoBala() {
         return tamanoBala;
     }
 
-    public void setTamanoBala(int tamanoBala) {
-        this.tamanoBala = tamanoBala;
-    }
-
     public int getIdPj() {
         return idPj;
     }
 
-    public void setIdPj(int idPj) {
-        this.idPj = idPj;
-    }
-
     public void pintar(SpriteBatch batch) {
         batch.draw(aspecto, posicion.x, posicion.y, anchoRelativoAspecto, altoRelativoAspecto);
+    }
+
+    public void actualizarFrame(float delta) {
+        stateTime += delta;
+        aspecto = (TextureRegion) animation.getKeyFrame(stateTime, true);
     }
 
     /**
@@ -184,7 +145,7 @@ public abstract class Bala {
                     return Intersector.overlapConvexPolygons(pol, polRival);
             }
         }
-        return false;
+        return true;
     }
 
     public boolean comprobarColisiones(Bala bala, Personaje personaje) {

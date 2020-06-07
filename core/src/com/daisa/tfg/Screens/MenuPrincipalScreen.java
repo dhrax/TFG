@@ -1,24 +1,18 @@
-package com.daisa.tfg.screens;
+package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.daisa.tfg.principal.Juego;
-import com.kotcrab.vis.ui.VisUI;
-import com.kotcrab.vis.ui.widget.VisLabel;
-import com.kotcrab.vis.ui.widget.VisTable;
-import com.kotcrab.vis.ui.widget.VisTextButton;
-import com.kotcrab.vis.ui.widget.VisTextField;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.daisa.tfg.Principal.Juego;
 
 public class MenuPrincipalScreen implements Screen {
 
@@ -42,6 +36,7 @@ public class MenuPrincipalScreen implements Screen {
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
+        tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
         Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
 
