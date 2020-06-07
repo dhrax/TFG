@@ -2,6 +2,8 @@ package com.daisa.tfg.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 
 public class AjustesScreen implements Screen {
@@ -36,6 +39,8 @@ public class AjustesScreen implements Screen {
     @Override
     public void show() {
 
+        juego.reproducirMusica(juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class));
+
         stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
@@ -44,72 +49,93 @@ public class AjustesScreen implements Screen {
 
         tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
-        titleLabel = new Label( "Preferencias", juego.manager.getSkin() );
+        titleLabel = new Label( "Preferencias", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         titleLabel.setFontScale(4);
-        volumeMusicLabel = new Label( "Volumen Musica", juego.manager.getSkin() );
+        volumeMusicLabel = new Label( "Volumen Musica", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         volumeMusicLabel.setFontScale(4);
-        volumeSoundLabel = new Label( "Volumen Sonido", juego.manager.getSkin() );
+        volumeSoundLabel = new Label( "Volumen Sonido", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         volumeSoundLabel.setFontScale(4);
-        musicOnOffLabel = new Label( "Musica", juego.manager.getSkin() );
+        musicOnOffLabel = new Label( "Musica", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         musicOnOffLabel.setFontScale(4);
-        soundOnOffLabel = new Label( "Sonido", juego.manager.getSkin() );
+        soundOnOffLabel = new Label( "Sonido", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         soundOnOffLabel.setFontScale(4);
 
-        final Slider volumeMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.getSkin());
+        final Slider volumeMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         volumeMusicSlider.scaleBy(1, 3  );
         volumeMusicSlider.setValue( juego.getPreferencias().getMusicVolume() );
-        volumeMusicSlider.addListener( new EventListener() {
+        volumeMusicSlider.addListener(new ChangeListener()
+        {
             @Override
-            public boolean handle(Event event) {
-                juego.getPreferencias().setMusicVolume( volumeMusicSlider.getValue() );
-                return false;
+            public void changed(ChangeEvent event, Actor actor)
+            {
+                Slider slider = (Slider) actor;
+
+                float value = slider.getValue();
+                juego.getPreferencias().setMusicVolume( value );
+                juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class).setVolume(juego.preferencias.getMusicVolume());
             }
+
         });
 
         Container<Slider> container = new Container<>(volumeMusicSlider);
         container.setTransform(true);
         container.size(400, 100);
 
-        final Slider soundMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.getSkin());
-        volumeMusicSlider.setValue( juego.getPreferencias().getSoundVolume() );
-        volumeMusicSlider.addListener( new EventListener() {
+        final CheckBox musicCheckbox = new CheckBox(null, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
+        musicCheckbox.setChecked( juego.getPreferencias().isMusicEnabled() );
+        musicCheckbox.addListener( new ChangeListener() {
             @Override
-            public boolean handle(Event event) {
-                juego.getPreferencias().setSoundVolume( soundMusicSlider.getValue() );
-                return false;
+            public void changed(ChangeEvent event, Actor actor) {
+                boolean enabled = musicCheckbox.isChecked();
+                juego.getPreferencias().setMusicEnabled( enabled );
+                if(!enabled)
+                    juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class).stop();
+                else
+                    juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class).play();
+
             }
         });
 
+
+
+
+
+
+        final Slider soundMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
+        soundMusicSlider.setValue( juego.getPreferencias().getSoundVolume() );
+        soundMusicSlider.addListener(new ChangeListener()
+        {
+            @Override
+            public void changed(ChangeEvent event, Actor actor)
+            {
+                Slider slider = (Slider) actor;
+
+                float value = slider.getValue();
+                juego.getPreferencias().setSoundVolume( value );
+            }
+        });
         Container<Slider> container2 = new Container<>(soundMusicSlider);
         container2.setTransform(true);
         container2.size(400, 100);
 
-        final CheckBox musicCheckbox = new CheckBox(null, juego.manager.getSkin());
-        musicCheckbox.setChecked( juego.getPreferencias().isMusicEnabled() );
-        musicCheckbox.addListener( new EventListener() {
+        final CheckBox soundEffectsCheckbox = new CheckBox(null, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
+        soundEffectsCheckbox.setChecked( juego.getPreferencias().isSoundEffectsEnabled() );
+        soundEffectsCheckbox.addListener( new ChangeListener() {
             @Override
-            public boolean handle(Event event) {
-                boolean enabled = musicCheckbox.isChecked();
-                juego.getPreferencias().setMusicEnabled( enabled );
-                return false;
-            }
-        });
-
-        final CheckBox soundEffectsCheckbox = new CheckBox(null, juego.manager.getSkin());
-        musicCheckbox.setChecked( juego.getPreferencias().isSoundEffectsEnabled() );
-        musicCheckbox.addListener( new EventListener() {
-            @Override
-            public boolean handle(Event event) {
+            public void changed (ChangeEvent event, Actor actor) {
                 boolean enabled = soundEffectsCheckbox.isChecked();
                 juego.getPreferencias().setSoundEffectsEnabled( enabled );
-                return false;
             }
         });
 
-        final TextButton backButton = new TextButton("Volver", juego.manager.getSkin());
+
+
+
+        final TextButton backButton = new TextButton("Volver", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                juego.reproducirSonido(juego.manager.getManagerJuego().get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 juego.setScreen(new MenuPrincipalScreen(juego));
             }
         });

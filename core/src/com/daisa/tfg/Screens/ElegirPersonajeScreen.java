@@ -5,7 +5,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Array;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 import com.daisa.tfg.Principal.PartidaMulti;
 import com.daisa.tfg.Util.SimpleDirectionGestureDetector;
@@ -33,7 +35,7 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
     boolean esperando;
     Array<Array<String>> rutaMatrizAnimaciones = new Array<>();
 
-    public ElegirPersonajeScreen(Juego juego) {
+    public ElegirPersonajeScreen(final Juego juego) {
         this.juego = juego;
         inicializar();
         mostrando = 0;
@@ -48,6 +50,7 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
 
             @Override
             public void onRight() {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_TRANSICION, Sound.class));
                 if (mostrando > 0)
                     mostrando--;
 
@@ -57,6 +60,7 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
 
             @Override
             public void onLeft() {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_TRANSICION, Sound.class));
                 if (mostrando < regionsPequenos.size - 1)
                     mostrando++;
 
@@ -88,8 +92,18 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
         }
     }
 
+    private void cambiarMusica() {
+        if(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class).isPlaying()){
+            juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class).stop();
+        }
+        juego.reproducirMusica(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_JUEGO, Music.class));
+    }
+
     @Override
     public void show() {
+
+        cambiarMusica();
+
         stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
@@ -100,6 +114,7 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
         regionGrandes.get(mostrando).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 if (!esperando) {
                     juego.comenzarPartida();
                     esperando = true;
@@ -132,13 +147,6 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
             tabla.add(regionsPequenos.get(mostrando + 1)).padLeft(50);
         } else {
             tabla.add().width(400).height(400).padLeft(50);
-        }
-
-        Label label = new Label("Esperando al rival", juego.manager.getEstiloLabel());
-        label.setColor(Color.BLACK);
-        if (esperando) {
-            tabla.row();
-            tabla.add(label);
         }
 
         if (!esperando) {
