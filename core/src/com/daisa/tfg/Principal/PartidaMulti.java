@@ -3,6 +3,8 @@ package com.daisa.tfg.Principal;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.Array;
@@ -16,6 +18,8 @@ import com.daisa.tfg.Screens.ElegirPersonajeScreen;
 import com.daisa.tfg.Util.Explosion;
 import com.daisa.tfg.Util.FondoAnimado;
 
+import java.util.Random;
+
 public class PartidaMulti implements Screen, InputProcessor {
 
     Juego juego;
@@ -24,8 +28,8 @@ public class PartidaMulti implements Screen, InputProcessor {
     int duracionPulsacion;
 
     OrthographicCamera camera;
-    private int color;
     FondoAnimado fondoAnimado;
+    Random random;
 
     public PartidaMulti(Juego juego, Array<String> rutaTexturas, int idPJ) {
         this.juego = juego;
@@ -38,9 +42,19 @@ public class PartidaMulti implements Screen, InputProcessor {
         instanciarPersonaje(idPJ, rutaTexturas);
         duracionPulsacion = 0;
 
-        color = 1;
-
         fondoAnimado = new FondoAnimado("Fondos/fondoAnimado.jpg");
+
+        sonidosAleatorios();
+    }
+
+    private void sonidosAleatorios() {
+        random = new Random();
+        personaje.setNumeroSonidoDisparo(random.nextInt(ConstantesJuego.ARRAY_SONIDOS_DISPARO.size));
+        personaje.setNumeroSonidoGolpe(random.nextInt(ConstantesJuego.ARRAY_SONIDOS_GOLPE.size));
+        if(personaje.getIdPj()==2)
+            personaje.setNumeroSonidoCarga(random.nextInt(ConstantesJuego.ARRAY_SONIDOS_CARGA.size));
+        else
+            personaje.setNumeroSonidoCarga(-1);
     }
 
     private void instanciarPersonaje(int idPJ, Array<String> rutaTexturas) {
@@ -102,8 +116,20 @@ public class PartidaMulti implements Screen, InputProcessor {
 
     private void comprobarToquePantalla() {
         if (personaje.getIdPj() == 2) {
-            if (Gdx.input.isTouched())
+            if (Gdx.input.isTouched()){
                 duracionPulsacion++;
+                if (duracionPulsacion > 40 && duracionPulsacion <= 80) {
+                    if (!personaje.isCarga1Sonado()){
+                        juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.ARRAY_SONIDOS_CARGA.get(personaje.getNumeroSonidoCarga()), Sound.class));
+                        personaje.setCarga1Sonado(true);
+                    }
+                } else if (duracionPulsacion > 80) {
+                    if (!personaje.isCarga2Sonado()){
+                        juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.ARRAY_SONIDOS_CARGA.get(personaje.getNumeroSonidoCarga()), Sound.class));
+                        personaje.setCarga2Sonado(true);
+                    }
+                }
+            }
         }
     }
 
@@ -129,16 +155,12 @@ public class PartidaMulti implements Screen, InputProcessor {
             personaje.setEstado(Personaje.EstadosPersonaje.QUIETO);
         }
 
-        //personaje.setPosicion(new Vector2(personaje.getPosicion().x+accelY, personaje.getPosicion().y));
-        //personaje.setPosicion(new Vector2(personaje.getPosicion().x, personaje.getPosicion().y-accelX));
-
         personaje.actualizarFrame(delta);
     }
 
     private void moverBalas(float delta) {
         personaje.moverBalas(personaje.getBalas());
         personaje.moverBalasRival(Personaje.getBalasRival());
-        //fixme normalizar
         for(Bala bala : personaje.getBalas()){
             bala.actualizarFrame(delta);
         }
@@ -164,12 +186,14 @@ public class PartidaMulti implements Screen, InputProcessor {
                 personaje.getArrayExplosiones().add(new Explosion());
                 personaje.setVida(personaje.getVida() - balaRival.getTamanoBala());
                 if (personaje.getVida() <= 0) {
+                    juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_FIN_PARTIDA, Sound.class));
                     Gdx.app.debug("DEBUG", "Me han matado");
                     juego.setRivalPuntuacion(juego.getRivalPuntuacion() + 1);
                     juego.write("fin");
                     juego.setScreen(new ElegirPersonajeScreen(juego));
                     this.dispose();
                 }
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.ARRAY_SONIDOS_GOLPE.get(personaje.getNumeroSonidoGolpe()), Sound.class));
             }
         }
         for (Explosion explosion : personaje.getArrayExplosiones()) {
@@ -202,13 +226,12 @@ public class PartidaMulti implements Screen, InputProcessor {
         for (Bala balaRival : Personaje.getBalasRival()){
             if(balaRival.getPosicion().y <= -balaRival.getAltoRelativoAspecto()){
                 Personaje.getBalasRival().removeValue(balaRival, false);
-                Gdx.app.debug("DEBUG", "Se borra bala de las balas rivales");
             }
         }
     }
 
     private void pintar() {
-        Gdx.gl.glClearColor(color, color, color, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         juego.batch.begin();
@@ -278,8 +301,7 @@ public class PartidaMulti implements Screen, InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        //Gdx.app.debug("DEBUG", "Se ha disparado una bala");
-        //Gdx.app.debug("DEBUG", "Tiempo pulsado: " + duracionPulsacion);
+
         int tamanoBala = 1;
         if (personaje.getIdPj() == 2) {
             if (duracionPulsacion > 40 && duracionPulsacion <= 80) {
@@ -288,8 +310,11 @@ public class PartidaMulti implements Screen, InputProcessor {
                 tamanoBala = 3;
             }
         }
-        //Gdx.app.debug("DEBUG", "Multiplicador tamano: " + tamanoBala);
-        personaje.disparar(tamanoBala);
+
+        personaje.setCarga1Sonado(false);
+        personaje.setCarga2Sonado(false);
+
+        personaje.disparar(tamanoBala, juego);
         duracionPulsacion = 0;
 
         return true;

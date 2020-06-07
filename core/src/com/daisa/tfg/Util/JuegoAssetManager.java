@@ -3,66 +3,85 @@ package com.daisa.tfg.Util;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.SkinLoader.SkinParameter;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 
 public class JuegoAssetManager {
 
     public final AssetManager managerJuego = new AssetManager();
-    Skin skin;
-    public final String skinNombre = "skin/glassy-ui.json";
-    BitmapFont font;
 
     Label.LabelStyle estiloLabel;
 
     TextField.TextFieldStyle estiloDefecto, estiloTextField;
 
     public JuegoAssetManager() {
-        if (!managerJuego.isLoaded(skinNombre)) {
-            Gdx.app.debug("DEBUG", "LoginScreen::Skin no cargada");
-            cargaSkin();
-            managerJuego.finishLoading();
-            Gdx.app.debug("DEBUG", "LoginScreen::Skin terminada de cargar");
-        }
-
-        skin = managerJuego.get("skin/glassy-ui.json");
-
+        cargaSkin();
         cargarFuente();
+        cargarSonidos();
+        cargarImagenes();
+
+        managerJuego.finishLoading();
+
+        managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class).setLooping(true);
+        managerJuego.get(ConstantesJuego.MUSICA_JUEGO, Music.class).setLooping(true);
         cargarEstilosUI();
     }
 
+    private void cargarImagenes() {
+        managerJuego.load(ConstantesJuego.IMAGEN_LOGO, Texture.class);
+        managerJuego.load(ConstantesJuego.IMAGEN_EXCLAMACION, Texture.class);
+    }
+
+    private void cargarSonidos() {
+        managerJuego.load(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class);
+        managerJuego.load(ConstantesJuego.SONIDO_TRANSICION, Sound.class);
+        managerJuego.load(ConstantesJuego.SONIDO_FIN_PARTIDA, Sound.class);
+        for (String nombre : ConstantesJuego.ARRAY_SONIDOS_DISPARO){
+            managerJuego.load(ConstantesJuego.ARRAY_SONIDOS_DISPARO.get(ConstantesJuego.ARRAY_SONIDOS_DISPARO.indexOf(nombre, false)), Sound.class);
+        }
+        for (String nombre : ConstantesJuego.ARRAY_SONIDOS_CARGA){
+            managerJuego.load(ConstantesJuego.ARRAY_SONIDOS_CARGA.get(ConstantesJuego.ARRAY_SONIDOS_CARGA.indexOf(nombre, false)), Sound.class);
+        }
+        for (String nombre : ConstantesJuego.ARRAY_SONIDOS_GOLPE){
+            managerJuego.load(ConstantesJuego.ARRAY_SONIDOS_GOLPE.get(ConstantesJuego.ARRAY_SONIDOS_GOLPE.indexOf(nombre, false)), Sound.class);
+        }
+        managerJuego.load(ConstantesJuego.MUSICA_MENU, Music.class);
+        managerJuego.load(ConstantesJuego.MUSICA_JUEGO, Music.class);
+    }
+
     public void cargaSkin(){
-        SkinParameter params = new SkinParameter("skin/glassy-ui.atlas");
-        managerJuego.load(skinNombre, Skin.class, params);
+        SkinParameter params = new SkinParameter(ConstantesJuego.NOMBRE_ATLAS_SKIN);
+        managerJuego.load(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class, params);
     }
 
     public void cargarFuente(){
-        font = new BitmapFont(Gdx.files.internal("Fuentes/fuente.fnt"), false);
+        managerJuego.load(ConstantesJuego.FUENTE, BitmapFont.class);
     }
 
     public void cargarEstilosUI(){
-        estiloDefecto = skin.get("default", TextField.TextFieldStyle.class);
-        estiloTextField = new TextField.TextFieldStyle(font, estiloDefecto.fontColor, estiloDefecto.cursor, estiloDefecto.selection, estiloDefecto.background);
+        estiloDefecto = managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class).get("default", TextField.TextFieldStyle.class);
+        estiloTextField = new TextField.TextFieldStyle(managerJuego.get(ConstantesJuego.FUENTE, BitmapFont.class), estiloDefecto.fontColor, estiloDefecto.cursor, estiloDefecto.selection, estiloDefecto.background);
 
         estiloLabel = new Label.LabelStyle();
-        estiloLabel.font = font;
-    }
-
-    public BitmapFont getFont() {
-        return font;
+        estiloLabel.font = managerJuego.get(ConstantesJuego.FUENTE, BitmapFont.class);
     }
 
     public Label.LabelStyle getEstiloLabel() {
         return estiloLabel;
     }
 
-    public Skin getSkin() {
-        return skin;
-    }
-
     public TextField.TextFieldStyle getEstiloTextField() {
         return estiloTextField;
+    }
+
+    public AssetManager getManagerJuego() {
+        return managerJuego;
     }
 }
