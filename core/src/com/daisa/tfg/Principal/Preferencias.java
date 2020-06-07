@@ -5,14 +5,18 @@ import com.badlogic.gdx.Preferences;
 
 public class Preferencias {
 
-    private static final String PREF_MUSIC_VOLUME = "volume";
-    private static final String PREF_MUSIC_ENABLED = "music.enabled";
-    private static final String PREF_SOUND_ENABLED = "sound.enabled";
-    private static final String PREF_SOUND_VOL = "sound";
-    private static final String PREFS_NAME = "b2dtut";
+    private static final String PREF_MUSIC_VOLUME = "volumen";
+    private static final String PREF_MUSIC_ENABLED = "musica.activada";
+    private static final String PREF_SOUND_ENABLED = "sonido.activado";
+    private static final String PREF_SOUND_VOL = "sonido";
+    private static final String PREFS_NAME = "preferencias";
+
+    Preferences preferencias;
 
     protected Preferences getPrefs() {
-        return Gdx.app.getPreferences(PREFS_NAME);
+        if (preferencias == null)
+            preferencias = Gdx.app.getPreferences(PREFS_NAME);
+        return preferencias;
     }
 
     public boolean isSoundEffectsEnabled() {
@@ -21,6 +25,16 @@ public class Preferencias {
 
     public void setSoundEffectsEnabled(boolean soundEffectsEnabled) {
         getPrefs().putBoolean(PREF_SOUND_ENABLED, soundEffectsEnabled);
+        getPrefs().flush();
+    }
+
+    public float getSoundVolume() {
+        return getPrefs().getFloat(PREF_SOUND_VOL, 0.5f);
+    }
+
+    public void setSoundVolume(float volume) {
+        Gdx.app.debug("DEBUG", "Volumen de los sonidos al cambiarlos: " + volume);
+        getPrefs().putFloat(PREF_SOUND_VOL, volume);
         getPrefs().flush();
     }
 
@@ -38,16 +52,8 @@ public class Preferencias {
     }
 
     public void setMusicVolume(float volume) {
+        Gdx.app.debug("DEBUG", "Volumen de la musica al cambiarla: " + volume);
         getPrefs().putFloat(PREF_MUSIC_VOLUME, volume);
-        getPrefs().flush();
-    }
-
-    public float getSoundVolume() {
-        return getPrefs().getFloat(PREF_SOUND_VOL, 0.5f);
-    }
-
-    public void setSoundVolume(float volume) {
-        getPrefs().putFloat(PREF_SOUND_VOL, volume);
         getPrefs().flush();
     }
 }

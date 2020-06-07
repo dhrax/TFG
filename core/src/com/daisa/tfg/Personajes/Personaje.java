@@ -1,6 +1,7 @@
 package com.daisa.tfg.Personajes;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -17,6 +18,7 @@ import com.daisa.tfg.Balas.BalaCirc;
 import com.daisa.tfg.Balas.BalaPol;
 import com.daisa.tfg.Balas.BalaRect;
 import com.daisa.tfg.Constantes.ConstantesJuego;
+import com.daisa.tfg.Principal.Juego;
 import com.daisa.tfg.Util.Explosion;
 import com.daisa.tfg.Util.Util;
 
@@ -31,6 +33,8 @@ public abstract class Personaje {
     private EstadosPersonaje estado;
     private float stateTime;
     private int idPj;
+    private int numeroSonidoDisparo, numeroSonidoGolpe, numeroSonidoCarga;
+    private boolean carga1Sonado, carga2Sonado;
 
     private Array<Bala> balas;
     private static Array<Bala> balasRival;
@@ -75,6 +79,9 @@ public abstract class Personaje {
         municion = ConstantesJuego.MUNICION_MAXIMA;
         momentoUltimoDisparo = TimeUtils.millis();
         momentoUltimaRecarga = TimeUtils.millis();
+
+        carga1Sonado = false;
+        carga2Sonado = false;
     }
 
 
@@ -95,18 +102,6 @@ public abstract class Personaje {
 
     public Array<Explosion> getArrayExplosiones() {
         return arrayExplosiones;
-    }
-
-    public void setArrayExplosiones(Array<Explosion> arrayExplosiones) {
-        this.arrayExplosiones = arrayExplosiones;
-    }
-
-    public long getMomentoUltimoDisparo() {
-        return momentoUltimoDisparo;
-    }
-
-    public void setMomentoUltimoDisparo(long momentoUltimoDisparo) {
-        this.momentoUltimoDisparo = momentoUltimoDisparo;
     }
 
     public long getMomentoUltimaRecarga() {
@@ -202,8 +197,9 @@ public abstract class Personaje {
         }
     }
 
-    public void disparar(int tamanoBala) {
+    public void disparar(int tamanoBala, Juego juego) {
         if (puedeDisparar(tamanoBala) && TimeUtils.millis() - momentoUltimoDisparo >= ConstantesJuego.CADENCIA_DISPAROS_MILIS) {
+            juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.ARRAY_SONIDOS_DISPARO.get(numeroSonidoDisparo), Sound.class));
             momentoUltimoDisparo = TimeUtils.millis();
             municion -= tamanoBala;
             Vector2 posicionBala = new Vector2(posicion.x + anchoRelativoAspecto / 2f, posicion.y + altoRelativoAspecto);
@@ -379,5 +375,45 @@ public abstract class Personaje {
             Gdx.app.debug("DEBUG", "[ERROR Circulo]" + e.getMessage());
         }
         return null;
+    }
+
+    public int getNumeroSonidoDisparo() {
+        return numeroSonidoDisparo;
+    }
+
+    public void setNumeroSonidoDisparo(int numeroSonidoDisparo) {
+        this.numeroSonidoDisparo = numeroSonidoDisparo;
+    }
+
+    public int getNumeroSonidoGolpe() {
+        return numeroSonidoGolpe;
+    }
+
+    public void setNumeroSonidoGolpe(int numeroSonidoGolpe) {
+        this.numeroSonidoGolpe = numeroSonidoGolpe;
+    }
+
+    public int getNumeroSonidoCarga() {
+        return numeroSonidoCarga;
+    }
+
+    public void setNumeroSonidoCarga(int numeroSonidoCarga) {
+        this.numeroSonidoCarga = numeroSonidoCarga;
+    }
+
+    public boolean isCarga1Sonado() {
+        return carga1Sonado;
+    }
+
+    public void setCarga1Sonado(boolean carga1Sonado) {
+        this.carga1Sonado = carga1Sonado;
+    }
+
+    public boolean isCarga2Sonado() {
+        return carga2Sonado;
+    }
+
+    public void setCarga2Sonado(boolean carga2Sonado) {
+        this.carga2Sonado = carga2Sonado;
     }
 }

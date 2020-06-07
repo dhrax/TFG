@@ -3,6 +3,8 @@ package com.daisa.tfg.Screens;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -14,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Array;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 
 public class ConectarJugadoresScreen implements Screen {
@@ -33,6 +36,8 @@ public class ConectarJugadoresScreen implements Screen {
     @Override
     public void show() {
 
+        juego.reproducirMusica(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class));
+
         stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
@@ -40,13 +45,14 @@ public class ConectarJugadoresScreen implements Screen {
         stage.addActor(tabla);
         tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
-        list = new List<>(juego.manager.getSkin());
+        list = new List<>(juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         list.setItems(dispositivosConectados);
 
 
-        TextButton button = new TextButton("Conectar", juego.manager.getSkin());
+        TextButton button = new TextButton("Conectar", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 if(list.getItems().size > 0){
                     String clickedItem = list.getSelected();
                     Gdx.app.debug("DISPOSITIVO ESCOGIDO", clickedItem);
@@ -56,17 +62,19 @@ public class ConectarJugadoresScreen implements Screen {
             }
         });
 
-        TextButton hostButton = new TextButton("Host", juego.manager.getSkin());
+        TextButton hostButton = new TextButton("Host", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         hostButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 juego.stop();
                 juego.habilitarSerDescubierto();
                 juego.empezarAEscuchar();
             }
         });
-        TextButton listenButton = new TextButton("Descubrir", juego.manager.getSkin());
+        TextButton listenButton = new TextButton("Descubrir", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         listenButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 juego.stop();
                 juego.descubrirDispositivos();
             }

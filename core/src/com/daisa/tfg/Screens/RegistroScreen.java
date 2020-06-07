@@ -4,17 +4,21 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 
 public class RegistroScreen implements Screen {
@@ -48,6 +52,9 @@ public class RegistroScreen implements Screen {
 
     @Override
     public void show() {
+
+        juego.reproducirMusica(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class));
+
         stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
@@ -136,10 +143,11 @@ public class RegistroScreen implements Screen {
             }
         });
 
-        btRegistrame = new TextButton("Registrame", juego.manager.getSkin());
+        btRegistrame = new TextButton("Registrame", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         btRegistrame.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 nombIntroducido = !tfNombUsuario.getText().equals("");
                 contraIntroducida = !tfContraUsuario.getText().equals("");
                 contraRepeIntroducida = !tfContraUsuarioRepe.getText().equals("");
@@ -163,10 +171,11 @@ public class RegistroScreen implements Screen {
             }
         });
 
-        btVolver = new TextButton("Volver", juego.manager.getSkin());
+        btVolver = new TextButton("Volver", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         btVolver.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 juego.setScreen(new LoginScreen(juego));
             }
         });

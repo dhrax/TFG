@@ -4,6 +4,8 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -11,11 +13,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 
 public class LoginScreen implements Screen {
@@ -45,6 +49,9 @@ public class LoginScreen implements Screen {
 
     @Override
     public void show() {
+
+        juego.reproducirMusica(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class));
+
         stage = new Stage(juego.viewport);
 
         Table tabla = new Table();
@@ -53,11 +60,11 @@ public class LoginScreen implements Screen {
 
         tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
-        Image imgLogo = new Image(new Texture(Gdx.files.internal("badlogic.jpg")));
-        Image imgExclamacion = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
-        Image imgExclamacion2 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
+        Image imgLogo = new Image(juego.manager.getManagerJuego().get(ConstantesJuego.IMAGEN_LOGO, Texture.class));
+        Image imgExclamacion = new Image(juego.manager.getManagerJuego().get(ConstantesJuego.IMAGEN_EXCLAMACION, Texture.class));
+        Image imgExclamacion2 = new Image(juego.manager.getManagerJuego().get(ConstantesJuego.IMAGEN_EXCLAMACION, Texture.class));
 
-        CharSequence nombreJuego = "NOMBRE_JUEGO";
+        CharSequence nombreJuego = "Last Spaceship Standing";
         lbNombreJuego = new Label(nombreJuego, juego.manager.getEstiloLabel());
         lbNombreJuego.setFontScale(3);
 
@@ -113,18 +120,21 @@ public class LoginScreen implements Screen {
             }
         });
 
-        btRegistro = new TextButton("Registrarse", juego.manager.getSkin());
+        btRegistro = new TextButton("Registrarse", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         btRegistro.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                //juego.reproducirSonido(juego.manager.getSonidoPulsarboton());
+                juego.reproducirSonido(juego.manager.getManagerJuego().get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 juego.setScreen(new RegistroScreen(juego));
             }
         });
 
-        btInicioSesion = new TextButton("Iniciar de Sesion", juego.manager.getSkin());
+        btInicioSesion = new TextButton("Iniciar de Sesion", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         btInicioSesion.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.getManagerJuego().get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 nombIntroducido = !tfNombreUsuario.getText().equals("");
                 contraIntroducida = !tfContraseñaUsuario.getText().equals("");
 
@@ -139,8 +149,8 @@ public class LoginScreen implements Screen {
             }
         });
 
-        tabla.row().padBottom(100).padTop(30);
-        tabla.add(imgLogo).width(200).height(200);
+        tabla.row().padBottom(15).padTop(30);
+        tabla.add(imgLogo).width(450).height(450);
         tabla.add(lbNombreJuego).colspan(2).left();
         tabla.add();
 
@@ -166,7 +176,7 @@ public class LoginScreen implements Screen {
         tabla.add();
         tabla.add();
 
-        tabla.row().padTop(20);
+        tabla.row().padTop(10);
         tabla.add(btRegistro).width(700).height(120);
         tabla.add().width(200);
         tabla.add(btInicioSesion).width(700).height(120);

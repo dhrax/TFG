@@ -3,6 +3,8 @@ package com.daisa.tfg.Principal;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -10,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Personajes.Personaje;
 import com.daisa.tfg.Screens.ConectarJugadoresScreen;
 import com.daisa.tfg.Screens.ElegirModoScreen;
@@ -202,6 +205,7 @@ public class Juego extends Game {
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
+                reproducirSonido(manager.managerJuego.get(ConstantesJuego.SONIDO_FIN_PARTIDA, Sound.class));
                 setScreen(new ElegirPersonajeScreen(juego));
             }
         });
@@ -233,5 +237,18 @@ public class Juego extends Game {
 
     public TextureRegion getFondoMenu() {
         return fondoMenu;
+    }
+
+    public void reproducirMusica(Music musica){
+        if(preferencias.isMusicEnabled() && !musica.isPlaying()){
+            Gdx.app.debug("DEBUG", "Musica activada con volumen: " + preferencias.getMusicVolume());
+            musica.play();
+        }
+    }
+    public void reproducirSonido(Sound sonido){
+        if(preferencias.isSoundEffectsEnabled()){
+            Gdx.app.debug("DEBUG", "Sonido con volumen: " + preferencias.getSoundVolume());
+            sonido.play(preferencias.getSoundVolume());
+        }
     }
 }
