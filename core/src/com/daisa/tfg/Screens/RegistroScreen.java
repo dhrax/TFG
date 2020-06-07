@@ -102,6 +102,8 @@ public class RegistroScreen implements Screen {
         });
 
         tfContraUsuario = new TextField(contraAlmacenada, juego.manager.getEstiloTextField());
+        tfContraUsuario.setPasswordMode(true);
+        tfContraUsuario.setPasswordCharacter('#');
         contraAlmacenada = "";
 
         tfContraUsuario.addListener(new ClickListener() {
@@ -123,6 +125,8 @@ public class RegistroScreen implements Screen {
         });
 
         tfContraUsuarioRepe = new TextField(contraAlmacenadaRepe, juego.manager.getEstiloTextField());
+        tfContraUsuarioRepe.setPasswordMode(true);
+        tfContraUsuarioRepe.setPasswordCharacter('#');
         contraAlmacenadaRepe = "";
 
         tfContraUsuarioRepe.addListener(new ClickListener() {
@@ -208,9 +212,9 @@ public class RegistroScreen implements Screen {
         }
 
         tabla.row().padTop(120);
-        tabla.add(btRegistrame).width(700).height(120);
-        tabla.add().width(200);
         tabla.add(btVolver).width(700).height(120);
+        tabla.add().width(200);
+        tabla.add(btRegistrame).width(700).height(120);
 
         Gdx.input.setInputProcessor(stage);
     }

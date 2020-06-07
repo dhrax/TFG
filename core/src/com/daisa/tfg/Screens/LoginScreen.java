@@ -99,9 +99,9 @@ public class LoginScreen implements Screen {
 
 
         tfContraseñaUsuario = new TextField(contraAlmacenada, juego.manager.getEstiloTextField());
+        tfContraseñaUsuario.setPasswordMode(true);
+        tfContraseñaUsuario.setPasswordCharacter('#');
         contraAlmacenada = "";
-
-
         tfContraseñaUsuario.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
