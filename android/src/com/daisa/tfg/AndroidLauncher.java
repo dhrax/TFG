@@ -100,6 +100,7 @@ public class AndroidLauncher extends AndroidApplication {
                             break;
                         case "fin":
                             juego.setMiPuntuacion(juego.getMiPuntuacion() + 1);
+                            servicioFirebase.guardarPuntuacionBBDD(juego.getNombreUsuario() , 1);
                             juego.elegirPersonajes();
                             break;
                         default:

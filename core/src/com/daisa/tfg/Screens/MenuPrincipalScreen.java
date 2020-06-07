@@ -59,8 +59,10 @@ public class MenuPrincipalScreen implements Screen {
         btRanking.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.debug("DEBUG", "MenuPrincipalScreen::Se crea la Screen RankingScreen");
                 juego.reproducirSonido(juego.manager.getManagerJuego().get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
-                //TODO crear RankingScreen
+                juego.rankingScreen = new RankingScreen(juego);
+                juego.setScreen(juego.rankingScreen);
             }
         });
 

@@ -8,16 +8,22 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.badlogic.gdx.utils.Array;
 import com.daisa.tfg.Constantes.ConstantesBluetooth;
 import com.daisa.tfg.Principal.Juego;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -121,6 +127,30 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
 
     }
 
+    @Override
+    public void recogerPuntuaciones() {
+        db.collection("puntuaciones")
+                .orderBy("puntuacion", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            Array<String> temp = new Array<>();
+                            for (DocumentSnapshot documento : task.getResult()) {
+                                temp.add(documento.get("nombre") + "\t\t" + documento.get("puntuacion"));
+                            }
+                            juego.refrescarListaRanking(temp);
+
+                        } else {
+                            Log.d("DEBUG", "[ERROR] Tarea recogerPuntuaciones no finalizada");
+                            Log.d("DEBUG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+    }
+
     private boolean controlesNombreUsuario(String nombreUsuario) {
         boolean correcto = true;
         if (nombreUsuario.length() < 5 || nombreUsuario.length() > 15) {
@@ -164,6 +194,8 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
 
     private void registrarUsuario(final String nombreUsuario, String contrasena) {
 
+        registrarUsuarioEnPuntuaciones(nombreUsuario);
+
         Map<String, Object> usuarioNuevo = new HashMap<>();
         usuarioNuevo.put("nombre", nombreUsuario);
         usuarioNuevo.put("contrasena", contrasena);
@@ -182,6 +214,56 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.d("DEBUG", "[ERROR] Al añadir el nuevo usuario", e);
+                    }
+                });
+    }
+
+    public void registrarUsuarioEnPuntuaciones (final String nombreUsuario){
+
+        Map<String, Object> usuarioNuevo = new HashMap<>();
+        usuarioNuevo.put("nombre", nombreUsuario);
+        usuarioNuevo.put("puntuacion", 0);
+
+        db.collection("puntuaciones")
+                .add(usuarioNuevo)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d("DEBUG", "Se ha añadido el usuario correctamente con el ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("DEBUG", "[ERROR] Al añadir el nuevo usuario en Puntuaciones", e);
+                    }
+                });
+    }
+
+    public void guardarPuntuacionBBDD(final String nombreUsuario, final int miPuntuacion) {
+        db.collection("puntuaciones")
+                .whereEqualTo("nombre", nombreUsuario)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (DocumentSnapshot documento : task.getResult()) {
+                                DocumentReference docRef = documento.getReference();
+                                WriteBatch batch = db.batch();
+
+                                int puntuacionAntigua = Integer.parseInt(documento.get("puntuacion").toString());
+
+                                Map<String, Object> mapTemp = new HashMap<>();
+                                mapTemp.put("puntuacion", puntuacionAntigua + miPuntuacion);
+                                batch.update(docRef, mapTemp);
+                                batch.commit();
+                            }
+
+                        } else {
+                            Log.d("DEBUG", "[ERROR] Tarea guardarPuntuacionBBDD no finalizada");
+                            Log.d("DEBUG", "Error getting documents: ", task.getException());
+                        }
                     }
                 });
     }

@@ -19,7 +19,10 @@ import com.daisa.tfg.Screens.ElegirModoScreen;
 import com.daisa.tfg.Screens.ElegirPersonajeScreen;
 import com.daisa.tfg.Screens.LoginScreen;
 import com.daisa.tfg.Screens.MenuPrincipalScreen;
+import com.daisa.tfg.Screens.RankingScreen;
 import com.daisa.tfg.Util.JuegoAssetManager;
+
+import java.util.ArrayList;
 
 public class Juego extends Game {
 
@@ -36,6 +39,7 @@ public class Juego extends Game {
     private FirebaseCallBack firebaseCallBack;
     private Array<String> nombreDispositivosVisibles;
     public ConectarJugadoresScreen conectarJugadoresScreen;
+    public RankingScreen rankingScreen;
     Juego juego;
 
     public boolean yoPreparado = false, rivalPreparado = false;
@@ -139,6 +143,17 @@ public class Juego extends Game {
         firebaseCallBack.pintarToast(mensaje);
     }
 
+    public void recogerPuntuacionesLibGDX() {
+        firebaseCallBack.recogerPuntuaciones();
+    }
+
+    public void refrescarListaRanking(Array<String> ranking) {
+        for(String nombre : ranking){
+            Gdx.app.debug("DEBUG", nombre);
+        }
+        rankingScreen.refrescarLista(ranking);
+    }
+
     public interface BluetoothCallBack {
         void activityForResultBluetooth();
         void conectarDispositivosBluetooth(String nombreDispositivo);
@@ -174,6 +189,7 @@ public class Juego extends Game {
         void comprobacionUsuario(String nombreUsuario, String contrasena);
         void pintarToast(String mensaje);
         void usuarioYaExiste(String nombreUsuario, String contrasena);
+        void recogerPuntuaciones();
     }
 
     public void comprobacionUsuarioLIBGDX(String nombreUsuario, String contrasena){
