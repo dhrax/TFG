@@ -19,6 +19,7 @@ import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.utils.Array;
 import com.daisa.tfg.Constantes.ConstantesBluetooth;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 import com.daisa.tfg.Screens.ConectarJugadoresScreen;
 
@@ -110,21 +111,19 @@ public class AndroidLauncher extends AndroidApplication {
                     break;
 
                 case ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO:
-                    CharSequence dispositivoConectado = "Conectado con " + msg.getData().getString(UtilAndroid.NOMBRE_DISPOSITIVO);
+                    CharSequence dispositivoConectado = "Conectado con " + msg.getData().getString(ConstantesBluetooth.NOMBRE_DISPOSITIVO);
                     Toast.makeText(androidLauncher, dispositivoConectado, Toast.LENGTH_SHORT).show();
                     Log.d("DEBUG", "Se llama a la SrcreenElegirPersonajee");
                     juego.elegirPersonajes();
                     break;
 
                 case ConstantesBluetooth.MENSAJE_TOAST:
-                    CharSequence content = msg.getData().getString("toast");
+                    CharSequence content = msg.getData().getString(ConstantesBluetooth.TOAST);
                     Toast.makeText(androidLauncher, content, Toast.LENGTH_SHORT).show();
                     break;
             }
         }
     };
-
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -2,8 +2,6 @@ package com.daisa.tfg;
 
 public class UtilAndroid {
 
-    public static String NOMBRE_DISPOSITIVO = "nombre de dispositivo";
-
     boolean hayNumerosEnString(String contrasena) {
         int pos = 0;
         boolean esNumero = false;
