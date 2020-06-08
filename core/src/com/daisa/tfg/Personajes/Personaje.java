@@ -24,6 +24,9 @@ import com.daisa.tfg.Util.Util;
 
 import java.lang.reflect.Field;
 
+/**
+ * Clase abstracta que almacena los atributos del personaje excepto el hitbox
+ */
 public abstract class Personaje {
 
     private int vida;
@@ -84,22 +87,7 @@ public abstract class Personaje {
         carga2Sonado = false;
     }
 
-
-    private void inicializarAnimaciones(Array<String> rutaAnimaciones) {
-
-        aspectoBasico = new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(0))));
-
-        for (int i = 1; i < 6; i++) {
-            if (rutaAnimaciones.get(i).contains("D"))
-                texturasDerecha.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
-            else
-                texturasIzquierda.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
-        }
-
-        animacionDerecha = new Animation(0.75f, texturasDerecha);
-        animacionIzquierda = new Animation(0.75f, texturasIzquierda);
-    }
-
+    //Getters & Setters
     public Array<Explosion> getArrayExplosiones() {
         return arrayExplosiones;
     }
@@ -160,32 +148,116 @@ public abstract class Personaje {
         return altoRelativoAspecto;
     }
 
+    public void setNumeroSonidoDisparo(int numeroSonidoDisparo) {
+        this.numeroSonidoDisparo = numeroSonidoDisparo;
+    }
+
+    public int getNumeroSonidoGolpe() {
+        return numeroSonidoGolpe;
+    }
+
+    public void setNumeroSonidoGolpe(int numeroSonidoGolpe) {
+        this.numeroSonidoGolpe = numeroSonidoGolpe;
+    }
+
+    public int getNumeroSonidoCarga() {
+        return numeroSonidoCarga;
+    }
+
+    public void setNumeroSonidoCarga(int numeroSonidoCarga) {
+        this.numeroSonidoCarga = numeroSonidoCarga;
+    }
+
+    public boolean isCarga1Sonado() {
+        return carga1Sonado;
+    }
+
+    public void setCarga1Sonado(boolean carga1Sonado) {
+        this.carga1Sonado = carga1Sonado;
+    }
+
+    public boolean isCarga2Sonado() {
+        return carga2Sonado;
+    }
+
+    public void setCarga2Sonado(boolean carga2Sonado) {
+        this.carga2Sonado = carga2Sonado;
+    }
+
+    /**
+     * anade las texturas a las animaciones
+     * @param rutaAnimaciones ruta de las texturas del personaje
+     */
+    private void inicializarAnimaciones(Array<String> rutaAnimaciones) {
+
+        aspectoBasico = new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(0))));
+
+        for (int i = 1; i < 6; i++) {
+            if (rutaAnimaciones.get(i).contains("D"))
+                texturasDerecha.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
+            else
+                texturasIzquierda.add(new Sprite(new Texture(Gdx.files.internal(rutaAnimaciones.get(i)))));
+        }
+
+        animacionDerecha = new Animation(0.75f, texturasDerecha);
+        animacionIzquierda = new Animation(0.75f, texturasIzquierda);
+    }
+
+    /**
+     * Metodo abstracto que mueve la textura del personaje
+     * @param direccion
+     */
     public abstract void mover(Vector2 direccion);
 
+    /**
+     * Mueve a la derecha la textura del personaje
+     * Estado pasa a DERECHA
+     */
     public void moverDerecha() {
         estado = EstadosPersonaje.DERECHA;
         mover(new Vector2(1, 0));
     }
 
+    /**
+     * Mueve a la izquierda la textura del personaje
+     * Estado pasa a IZQUIERDA
+     */
     public void moverIzquierda() {
         estado = EstadosPersonaje.IZQUIERDA;
         mover(new Vector2(-1, 0));
     }
 
+    /**
+     * Mueve hacia arriba la textura del personaje
+     * Estado pasa a QUIETO
+     */
     public void moverArriba() {
         estado = EstadosPersonaje.QUIETO;
         mover(new Vector2(0, 1));
     }
 
+    /**
+     * Mueve hacia abajo la textura del personaje
+     * Estado pasa a QUIETO
+     */
     public void moverAbajo() {
         estado = EstadosPersonaje.QUIETO;
         mover(new Vector2(0, -1));
     }
 
+    /**
+     * Pinta al personaje escalado
+     * @param batch objeto para pintar
+     */
     public void pintar(SpriteBatch batch) {
         batch.draw(aspectoActual, posicion.x, posicion.y, anchoRelativoAspecto, altoRelativoAspecto);
     }
 
+    /**
+     * <p>Pinta las vidas (en corazones) en la parte derecha de la pantalla</p>
+     * <p>Pinta la municion en la parte izquierda de la pantalla</p>
+     * @param batch
+     */
     public void dibujarHud(SpriteBatch batch) {
         for (int i = 0; i < vida; i++) {
             batch.draw(hudCorazones, ConstantesJuego.PPU / 2, ConstantesJuego.PPU * ((3 * i + 1) / 2f), ConstantesJuego.PPU, ConstantesJuego.PPU);
@@ -197,6 +269,12 @@ public abstract class Personaje {
         }
     }
 
+    /**
+     * Comprueba si se puede disparar:
+     *      -Si se puede, se genera una bala con el id y la posicion del personaje
+     * @param tamanoBala tamano de la bala al disparar
+     * @param juego objeto usado para reproducir sonidos en la funcion
+     */
     public void disparar(int tamanoBala, Juego juego) {
         if (puedeDisparar(tamanoBala) && TimeUtils.millis() - momentoUltimoDisparo >= ConstantesJuego.CADENCIA_DISPAROS_MILIS) {
             juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.ARRAY_SONIDOS_DISPARO.get(numeroSonidoDisparo), Sound.class));
@@ -208,20 +286,37 @@ public abstract class Personaje {
         }
     }
 
+    /**
+     * Comprueba al disparar una bala, su tamano no supere la municion restante
+     * @param tamanoBala tamano de la bala al disparar
+     * @return si hay municion suficiente para disparar o no
+     */
     protected boolean puedeDisparar(int tamanoBala) {
         return municion >= tamanoBala;
     }
 
+    /**
+     * Se anade la bala recibida por BlueTooth al array de las balas rivales
+     * @param balaX posicion X de la bala
+     * @param idPjRival id del personaje que disparo la bala
+     * @param tamanoBala tamano de la bala al recibirla
+     */
     public static void anadirBalaRival(float balaX, int idPjRival, int tamanoBala) {
         Vector2 posicionRelativaRecibido = new Vector2(ConstantesJuego.ANCHO_PANTALLA * balaX / 100, ConstantesJuego.ALTO_PANTALLA);
-        //TODO flippear la imagen en vertical
         Bala balaRival = tipoBala(idPjRival, posicionRelativaRecibido, tamanoBala);
         balasRival.add(balaRival);
     }
 
+    /**
+     * Genera una clase de bala diferente dependiendo del personaje que le haya disparado
+     * @param idPj id del personaje que le ha disparado
+     * @param posicionRelativaRecibido posicion X e Y donde se generara la bala
+     * @param tamanoBala tamano de la bala que se ha disparado'
+     * @return retorna una bala de un rectangular, circular o poligonal
+     */
     private static Bala tipoBala(int idPj, Vector2 posicionRelativaRecibido, int tamanoBala) {
         Bala bala;
-        Array<TextureRegion> arrayTexturas = Util.listFilesForFolder(Gdx.files.internal("Balas/" + idPj));
+        Array<TextureRegion> arrayTexturas = Util.ficherosEnDirectorio(Gdx.files.internal("Balas/" + idPj));
         switch (idPj) {
             //Balas con forma rectangular
             case 1:
@@ -243,13 +338,17 @@ public abstract class Personaje {
                 bala = new BalaPol(posicionRelativaRecibido, velocidadBalas, arrayTexturas, idPj, tamanoBala);
                 break;
             default:
-                arrayTexturas = Util.listFilesForFolder(Gdx.files.internal("Balas/1"));
+                arrayTexturas = Util.ficherosEnDirectorio(Gdx.files.internal("Balas/1"));
                 bala = new BalaRect(posicionRelativaRecibido, velocidadBalas, arrayTexturas, idPj, tamanoBala);
                 break;
         }
         return bala;
     }
 
+    /**
+     * Metodo que se encarga de actualizar la textura que hay que pintar en cada frame
+     * @param delta deltaTime
+     */
     public void actualizarFrame(float delta) {
         stateTime += delta;
         switch (estado) {
@@ -265,6 +364,9 @@ public abstract class Personaje {
         }
     }
 
+    /**
+     * Metodo abstracto que se encarga de recolocar el hitbox del personaje despues de moverse
+     */
     public abstract void recolocarHitbox();
 
     public void dispose() {
@@ -276,10 +378,10 @@ public abstract class Personaje {
     }
 
 
-    public enum EstadosPersonaje {
-        DERECHA, IZQUIERDA, QUIETO, MUERTO
-    }
-
+    /**
+     * Mueve las balas de su array
+     * @param balas array de balas a mover
+     */
     public void moverBalas(Array<Bala> balas) {
         for (Bala bala : balas) {
             switch (bala.getIdPj()) {
@@ -317,6 +419,10 @@ public abstract class Personaje {
         }
     }
 
+    /**
+     * Mueve las balas rival de su array
+     * @param balasRival array de balas las rival a mover
+     */
     public void moverBalasRival(Array<Bala> balasRival) {
         for (Bala bala : balasRival) {
             switch (bala.getIdPj()) {
@@ -354,6 +460,11 @@ public abstract class Personaje {
         }
     }
 
+    /**
+     * Obtiene el poligono del personaje
+     * @param personaje personaje del que se quiere obtener el poligono
+     * @return poligono del personaje o null si ha habido algun error
+     */
     public Polygon obtenerPoligono(Personaje personaje) {
         Field field;
         try {
@@ -366,6 +477,11 @@ public abstract class Personaje {
         return null;
     }
 
+    /**
+     * Obtiene el circulo del personaje
+     * @param personaje personaje del que se quiere obtener el circulo
+     * @return circulo del personaje o null si ha habido algun error
+     */
     public Circle obtenerCirculo(Personaje personaje) {
         try {
             Field field = personaje.getClass().getDeclaredField("circ");
@@ -377,43 +493,10 @@ public abstract class Personaje {
         return null;
     }
 
-    public int getNumeroSonidoDisparo() {
-        return numeroSonidoDisparo;
-    }
-
-    public void setNumeroSonidoDisparo(int numeroSonidoDisparo) {
-        this.numeroSonidoDisparo = numeroSonidoDisparo;
-    }
-
-    public int getNumeroSonidoGolpe() {
-        return numeroSonidoGolpe;
-    }
-
-    public void setNumeroSonidoGolpe(int numeroSonidoGolpe) {
-        this.numeroSonidoGolpe = numeroSonidoGolpe;
-    }
-
-    public int getNumeroSonidoCarga() {
-        return numeroSonidoCarga;
-    }
-
-    public void setNumeroSonidoCarga(int numeroSonidoCarga) {
-        this.numeroSonidoCarga = numeroSonidoCarga;
-    }
-
-    public boolean isCarga1Sonado() {
-        return carga1Sonado;
-    }
-
-    public void setCarga1Sonado(boolean carga1Sonado) {
-        this.carga1Sonado = carga1Sonado;
-    }
-
-    public boolean isCarga2Sonado() {
-        return carga2Sonado;
-    }
-
-    public void setCarga2Sonado(boolean carga2Sonado) {
-        this.carga2Sonado = carga2Sonado;
+    /**
+     * Estados del movimiento del personaje
+     */
+    public enum EstadosPersonaje {
+        DERECHA, IZQUIERDA, QUIETO, MUERTO
     }
 }

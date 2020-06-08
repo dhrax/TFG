@@ -4,7 +4,39 @@ import com.badlogic.gdx.input.GestureDetector;
 
 public class SimpleDirectionGestureDetector extends GestureDetector {
 
-    public interface DirectionListener {
+    public SimpleDirectionGestureDetector(DireccionListener direccionListener) {
+        super(new DirectionGestureListener(direccionListener));
+    }
+
+    private static class DirectionGestureListener extends GestureAdapter {
+        DireccionListener direccionListener;
+
+        public DirectionGestureListener(DireccionListener direccionListener) {
+            this.direccionListener = direccionListener;
+        }
+
+        @Override
+        public boolean fling(float velocityX, float velocityY, int button) {
+            if (Math.abs(velocityX) > Math.abs(velocityY))
+                if (velocityX > 0)
+                    direccionListener.onRight();
+                else
+                    direccionListener.onLeft();
+
+            else if (velocityY > 0)
+                direccionListener.onDown();
+            else
+                direccionListener.onUp();
+
+
+            return super.fling(velocityX, velocityY, button);
+        }
+    }
+
+    /**
+     * interfaz encargada que comunica DirectionGestureListener con la Screen de LIBGDX
+     */
+    public interface DireccionListener {
         void onLeft();
 
         void onRight();
@@ -13,38 +45,4 @@ public class SimpleDirectionGestureDetector extends GestureDetector {
 
         void onDown();
     }
-
-
-
-    public SimpleDirectionGestureDetector(DirectionListener directionListener) {
-        super(new DirectionGestureListener(directionListener));
-    }
-
-    private static class DirectionGestureListener extends GestureAdapter{
-        DirectionListener directionListener;
-
-        public DirectionGestureListener(DirectionListener directionListener){
-            this.directionListener = directionListener;
-        }
-
-        @Override
-        public boolean fling(float velocityX, float velocityY, int button) {
-            if(Math.abs(velocityX)>Math.abs(velocityY)){
-                if(velocityX>0){
-                    directionListener.onRight();
-                }else{
-                    directionListener.onLeft();
-                }
-            }else{
-                if(velocityY>0){
-                    directionListener.onDown();
-                }else{
-                    directionListener.onUp();
-                }
-            }
-            return super.fling(velocityX, velocityY, button);
-        }
-
-    }
-
 }

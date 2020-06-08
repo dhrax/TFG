@@ -19,39 +19,39 @@ public class Preferencias {
         return preferencias;
     }
 
-    public boolean isSoundEffectsEnabled() {
+    public boolean sonidosActivados() {
         return getPrefs().getBoolean(PREF_SOUND_ENABLED, true);
     }
 
-    public void setSoundEffectsEnabled(boolean soundEffectsEnabled) {
+    public void activarSonidos(boolean soundEffectsEnabled) {
         getPrefs().putBoolean(PREF_SOUND_ENABLED, soundEffectsEnabled);
         getPrefs().flush();
     }
 
-    public float getSoundVolume() {
+    public float volumenSonidos() {
         return getPrefs().getFloat(PREF_SOUND_VOL, 0.5f);
     }
 
-    public void setSoundVolume(float volume) {
+    public void cambiarVolumenSonidos(float volume) {
         Gdx.app.debug("DEBUG", "Volumen de los sonidos al cambiarlos: " + volume);
         getPrefs().putFloat(PREF_SOUND_VOL, volume);
         getPrefs().flush();
     }
 
-    public boolean isMusicEnabled() {
+    public boolean musicaActivada() {
         return getPrefs().getBoolean(PREF_MUSIC_ENABLED, true);
     }
 
-    public void setMusicEnabled(boolean musicEnabled) {
+    public void activarMusica(boolean musicEnabled) {
         getPrefs().putBoolean(PREF_MUSIC_ENABLED, musicEnabled);
         getPrefs().flush();
     }
 
-    public float getMusicVolume() {
+    public float volumenMusica() {
         return getPrefs().getFloat(PREF_MUSIC_VOLUME, 0.5f);
     }
 
-    public void setMusicVolume(float volume) {
+    public void cambiarVolumenMusica(float volume) {
         Gdx.app.debug("DEBUG", "Volumen de la musica al cambiarla: " + volume);
         getPrefs().putFloat(PREF_MUSIC_VOLUME, volume);
         getPrefs().flush();

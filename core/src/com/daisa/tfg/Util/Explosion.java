@@ -32,6 +32,10 @@ public class Explosion {
         animation = new Animation(.25f, text);
     }
 
+    /**
+     * Actualiza la textura que hay que mostrar
+     * @param delta deltaTime del juego
+     */
     public void actualizar(float delta){
         stateTime += delta;
         if(animation.isAnimationFinished(stateTime)){
@@ -39,12 +43,17 @@ public class Explosion {
         }
     }
 
+    /**
+     * Pinta la textura escalada
+     * @param batch objeto para pintar
+     * @param x posicion X donde se va a pintar
+     * @param y posicion Y donde se va a pintar
+     */
     public void pintar(SpriteBatch batch, float x, float y){
         TextureRegion aspectoActual = (TextureRegion) animation.getKeyFrame(stateTime, false);
         if(aspectoActual == text.get(0))
             batch.draw(aspectoActual, x- ConstantesJuego.PPU*0.75f, y, ConstantesJuego.PPU*3/2, ConstantesJuego.PPU*3/2);
         else
             batch.draw(aspectoActual, x-ConstantesJuego.PPU, y, ConstantesJuego.PPU*2, ConstantesJuego.PPU*2);
-
     }
 }

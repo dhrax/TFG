@@ -3,7 +3,6 @@ package com.daisa.tfg.Principal;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -20,6 +19,9 @@ import com.daisa.tfg.Util.FondoAnimado;
 
 import java.util.Random;
 
+/**
+ * Clase que se encarga de la gestion de la partida
+ */
 public class PartidaMulti implements Screen, InputProcessor {
 
     Juego juego;
@@ -47,6 +49,9 @@ public class PartidaMulti implements Screen, InputProcessor {
         sonidosAleatorios();
     }
 
+    /**
+     * Metodo que genera unos sonidos diferentes en cada partida
+     */
     private void sonidosAleatorios() {
         random = new Random();
         personaje.setNumeroSonidoDisparo(random.nextInt(ConstantesJuego.ARRAY_SONIDOS_DISPARO.size));
@@ -57,6 +62,11 @@ public class PartidaMulti implements Screen, InputProcessor {
             personaje.setNumeroSonidoCarga(-1);
     }
 
+    /**
+     * Se instancia un personaje dependiendo de la posicion en la que se encuentre en el array de personajes
+     * @param idPJ posicion del personaje en el array
+     * @param rutaTexturas ruta de las texturas del personaje
+     */
     private void instanciarPersonaje(int idPJ, Array<String> rutaTexturas) {
         switch (idPJ) {
             case 1:
@@ -90,6 +100,10 @@ public class PartidaMulti implements Screen, InputProcessor {
         pintar();
     }
 
+    /**
+     * Metodo que se encarga de la logica de la partida
+     * @param delta deltaTime de la partida
+     */
     private void actualizar(float delta) {
         moverFondo(delta);
         moverPersonaje(delta);
@@ -100,10 +114,17 @@ public class PartidaMulti implements Screen, InputProcessor {
         comprobarLimites();
     }
 
+    /**
+     * Se actualiza el fondo de la pantalla
+     * @param delta deltaTime de la partida
+     */
     private void moverFondo(float delta) {
         fondoAnimado.actualizar(delta);
     }
 
+    /**
+     * Se comprueba si se tiene que anadir una nueva bala a la municion del jugador
+     */
     private void recargar() {
         if (personaje.getMunicion() < ConstantesJuego.MUNICION_MAXIMA) {
             if (TimeUtils.millis() - personaje.getMomentoUltimaRecarga() >= ConstantesJuego.TIEMPO_REGENERACION_BALAS_MILIS) {
@@ -114,6 +135,9 @@ public class PartidaMulti implements Screen, InputProcessor {
         }
     }
 
+    /**
+     * Se comprueba si el usuario ha tocado la pantalla
+     */
     private void comprobarToquePantalla() {
         if (personaje.getIdPj() == 2) {
             if (Gdx.input.isTouched()){
@@ -133,6 +157,10 @@ public class PartidaMulti implements Screen, InputProcessor {
         }
     }
 
+    /**
+     * Se mueve y actualiza el personaje
+     * @param delta deltaTime de la partida
+     */
     private void moverPersonaje(float delta) {
         accelX = Gdx.input.getAccelerometerX();
         accelY = Gdx.input.getAccelerometerY();
@@ -158,6 +186,10 @@ public class PartidaMulti implements Screen, InputProcessor {
         personaje.actualizarFrame(delta);
     }
 
+    /**
+     * Se mueven y actualizan las balas
+     * @param delta deltaTime de la partida
+     */
     private void moverBalas(float delta) {
         personaje.moverBalas(personaje.getBalas());
         personaje.moverBalasRival(Personaje.getBalasRival());
@@ -169,7 +201,10 @@ public class PartidaMulti implements Screen, InputProcessor {
         }
     }
 
-
+    /**
+     * Se comprueba si los objetos han chocado entre si
+     * @param delta deltaTime de la partida
+     */
     private void comprobarColisiones(float delta) {
         for (Bala bala : personaje.getBalas()) {
             for (Bala balaRival : Personaje.getBalasRival()) {
@@ -189,7 +224,7 @@ public class PartidaMulti implements Screen, InputProcessor {
                     juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_FIN_PARTIDA, Sound.class));
                     Gdx.app.debug("DEBUG", "Me han matado");
                     juego.setRivalPuntuacion(juego.getRivalPuntuacion() + 1);
-                    juego.write("fin");
+                    juego.writeLIBGDX("fin");
                     juego.setScreen(new ElegirPersonajeScreen(juego));
                     this.dispose();
                 }
@@ -201,6 +236,9 @@ public class PartidaMulti implements Screen, InputProcessor {
         }
     }
 
+    /**
+     * Se comprueba si los objetos han llegado al los limites de la pantalla
+     */
     private void comprobarLimites() {
 
         if (personaje.getPosicion().x < 0)
@@ -218,7 +256,7 @@ public class PartidaMulti implements Screen, InputProcessor {
         for (Bala bala : personaje.getBalas()) {
             if (bala.getPosicion().y >= ConstantesJuego.ALTO_PANTALLA) {
                 float posicionRelativaEnvio = 100 - bala.posicionRelativaPantallaEnvio();
-                juego.write(posicionRelativaEnvio + ":" + personaje.getIdPj() + ":" + bala.getTamanoBala());
+                juego.writeLIBGDX(posicionRelativaEnvio + ConstantesJuego.SEPARADOR_DATOS + personaje.getIdPj() + ConstantesJuego.SEPARADOR_DATOS + bala.getTamanoBala());
                 personaje.getBalas().removeValue(bala, false);
             }
         }
@@ -230,6 +268,9 @@ public class PartidaMulti implements Screen, InputProcessor {
         }
     }
 
+    /**
+     * Pinta lo que se vaya a ver en la pantalla
+     */
     private void pintar() {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -302,6 +343,7 @@ public class PartidaMulti implements Screen, InputProcessor {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 
+        //Dependiendo de cuanto tiempo se haya pulsado la pantalla, el tamano de la bala aumentara
         int tamanoBala = 1;
         if (personaje.getIdPj() == 2) {
             if (duracionPulsacion > 40 && duracionPulsacion <= 80) {

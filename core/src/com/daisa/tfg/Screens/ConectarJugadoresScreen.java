@@ -1,6 +1,5 @@
 package com.daisa.tfg.Screens;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
@@ -29,13 +28,11 @@ public class ConectarJugadoresScreen implements Screen {
 
     public ConectarJugadoresScreen(Juego juego) {
         this.juego = juego;
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
         dispositivosConectados = new Array<>();
     }
 
     @Override
     public void show() {
-
         juego.reproducirMusica(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class));
 
         stage = new Stage(juego.viewport);
@@ -48,17 +45,14 @@ public class ConectarJugadoresScreen implements Screen {
         list = new List<>(juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         list.setItems(dispositivosConectados);
 
-
         TextButton button = new TextButton("Conectar", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
                 if(list.getItems().size > 0){
                     String clickedItem = list.getSelected();
-                    Gdx.app.debug("DISPOSITIVO ESCOGIDO", clickedItem);
-                    juego.conectarBluetooth(clickedItem);
+                    juego.conectarDispositivosBluetoothLIBGDX(clickedItem);
                 }
-
             }
         });
 
@@ -66,17 +60,27 @@ public class ConectarJugadoresScreen implements Screen {
         hostButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
-                juego.stop();
-                juego.habilitarSerDescubierto();
-                juego.empezarAEscuchar();
+                juego.crearToastLIBGDX("Se permite que otros dispositivos se conecten a este");
+                juego.stopLIBGDX();
+                juego.habilitarSerDescubiertoBluetoothLIBGDX();
+                juego.escucharBluetoothLIBGDX();
             }
         });
         TextButton listenButton = new TextButton("Descubrir", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         listenButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
-                juego.stop();
-                juego.descubrirDispositivos();
+                juego.crearToastLIBGDX("Se empieza a descubrir dispositivos cercanos");
+                juego.stopLIBGDX();
+                juego.descubrirDispositivosBluetoothLIBGDX();
+            }
+        });
+
+        TextButton botonVolver = new TextButton("Volver", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
+        botonVolver.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
+                juego.setScreen(new MenuPrincipalScreen(juego));
             }
         });
 
@@ -89,15 +93,19 @@ public class ConectarJugadoresScreen implements Screen {
         tablaScrollPane.add(scrollPane).height(800).width(750);
 
         tablaBotones.row();
-        tablaBotones.add(button).height(200).width(700);
+        tablaBotones.add(button).height(150).width(700);
         tablaBotones.row();
         tablaBotones.add().height(100);
         tablaBotones.row();
-        tablaBotones.add(hostButton).height(200).width(700);
+        tablaBotones.add(hostButton).height(150).width(700);
         tablaBotones.row();
         tablaBotones.add().height(100);
         tablaBotones.row();
-        tablaBotones.add(listenButton).height(200).width(700);
+        tablaBotones.add(listenButton).height(150).width(700);
+        tablaBotones.row();
+        tablaBotones.add().height(100);
+        tablaBotones.row();
+        tablaBotones.add(botonVolver).height(150).width(700);
 
         tabla.row();
         tabla.add(tablaScrollPane);
@@ -105,9 +113,12 @@ public class ConectarJugadoresScreen implements Screen {
         tabla.add(tablaBotones);
 
         Gdx.input.setInputProcessor(stage);
-
     }
 
+    /**
+     * Refresca el nombre de los dispositivos Bluetooth disponibles
+     * @param dispositivosConectados lista actualizada de los nombres de los dispositivos
+     */
     public void refrescarLista(Array<String> dispositivosConectados) {
         this.dispositivosConectados = dispositivosConectados;
         Gdx.app.postRunnable(new Runnable() {
@@ -120,13 +131,11 @@ public class ConectarJugadoresScreen implements Screen {
 
     @Override
     public void render(float delta) {
-
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(delta);
         stage.draw();
-
     }
 
     @Override

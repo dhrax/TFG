@@ -16,6 +16,10 @@ public class Pintarhitbox {
 
     private static ShapeRenderer shapeRenderer = new ShapeRenderer();
 
+    /**
+     * Pinta los hitboxs de todos los objetos
+     * @param personaje
+     */
     public static void pintarHitboxes(Personaje personaje){
         Gdx.gl.glLineWidth(5f);
         shapeRenderer.setAutoShapeType(true);

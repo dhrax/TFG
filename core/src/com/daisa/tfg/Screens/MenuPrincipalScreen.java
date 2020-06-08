@@ -29,11 +29,12 @@ public class MenuPrincipalScreen implements Screen {
 
     public MenuPrincipalScreen(Juego juego) {
         this.juego = juego;
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
     }
 
     @Override
     public void show() {
+
+        cambiarMusica();
 
         juego.reproducirMusica(juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class));
 
@@ -50,8 +51,15 @@ public class MenuPrincipalScreen implements Screen {
         btJugar.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                juego.reproducirSonido(juego.manager.getManagerJuego().get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
-                juego.setScreen(new ElegirModoScreen(juego));
+                juego.reproducirSonido(juego.manager.managerJuego.get(ConstantesJuego.SONIDO_PULSAR_BOTON, Sound.class));
+                if(juego.bluetoothEncendidoLIBGDX()){
+                    Gdx.app.debug("DEBUG", "MenuPrincipalScreen::Bluetooth encendido, se crea la Screen ConectarJugadoresScreen");
+                    juego.conectarJugadoresScreen = new ConectarJugadoresScreen(juego);
+                    juego.setScreen(juego.conectarJugadoresScreen);
+                }else{
+                    Gdx.app.debug("DEBUG", "MenuPrincipalScreen::Bluetooth apagado, se pide permiso para encenderlo");
+                    juego.activityForResultBluetoothLIBGDX();
+                }
             }
         });
 
@@ -102,6 +110,16 @@ public class MenuPrincipalScreen implements Screen {
 
         stage.act(delta);
         stage.draw();
+    }
+
+    /**
+     * Cambia la musica que se esta reproduciendo
+     */
+    private void cambiarMusica() {
+        if(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_JUEGO, Music.class).isPlaying()){
+            juego.manager.managerJuego.get(ConstantesJuego.MUSICA_JUEGO, Music.class).stop();
+        }
+        juego.reproducirMusica(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class));
     }
 
     @Override

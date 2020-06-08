@@ -6,8 +6,6 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -49,6 +47,7 @@ public class AjustesScreen implements Screen {
 
         tabla.setBackground(new TiledDrawable(juego.getFondoMenu()));
 
+        //Se instancian los label de la  Screen
         titleLabel = new Label( "Preferencias", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         titleLabel.setFontScale(4);
         volumeMusicLabel = new Label( "Volumen Musica", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
@@ -60,9 +59,11 @@ public class AjustesScreen implements Screen {
         soundOnOffLabel = new Label( "Sonido", juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class) );
         soundOnOffLabel.setFontScale(4);
 
+
         final Slider volumeMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
         volumeMusicSlider.scaleBy(1, 3  );
-        volumeMusicSlider.setValue( juego.getPreferencias().getMusicVolume() );
+        volumeMusicSlider.setValue( juego.getPreferencias().volumenMusica() );
+        //Se anade un ChangeListener para que cambiara el volumen de la musica
         volumeMusicSlider.addListener(new ChangeListener()
         {
             @Override
@@ -71,23 +72,25 @@ public class AjustesScreen implements Screen {
                 Slider slider = (Slider) actor;
 
                 float value = slider.getValue();
-                juego.getPreferencias().setMusicVolume( value );
-                juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class).setVolume(juego.preferencias.getMusicVolume());
+                juego.getPreferencias().cambiarVolumenMusica( value );
+                juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class).setVolume(juego.preferencias.volumenMusica());
             }
 
         });
 
-        Container<Slider> container = new Container<>(volumeMusicSlider);
-        container.setTransform(true);
-        container.size(400, 100);
+        //Se utilizan contenedores para poder anadir los slider y los checkBox a la tabla
+        Container<Slider> containerMusicSlider = new Container<>(volumeMusicSlider);
+        containerMusicSlider.setTransform(true);
+        containerMusicSlider.size(400, 100);
 
         final CheckBox musicCheckbox = new CheckBox(null, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
-        musicCheckbox.setChecked( juego.getPreferencias().isMusicEnabled() );
+        musicCheckbox.setChecked( juego.getPreferencias().musicaActivada() );
+        //Se anade un ChangeListener para que cambiara el activara o desactivara la musica
         musicCheckbox.addListener( new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 boolean enabled = musicCheckbox.isChecked();
-                juego.getPreferencias().setMusicEnabled( enabled );
+                juego.getPreferencias().activarMusica( enabled );
                 if(!enabled)
                     juego.manager.getManagerJuego().get(ConstantesJuego.MUSICA_MENU, Music.class).stop();
                 else
@@ -100,9 +103,9 @@ public class AjustesScreen implements Screen {
 
 
 
-
+        //Se anade un ChangeListener para que cambiara el volumen de los sonidos
         final Slider soundMusicSlider = new Slider(0f, 1f, 0.1f,false, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
-        soundMusicSlider.setValue( juego.getPreferencias().getSoundVolume() );
+        soundMusicSlider.setValue( juego.getPreferencias().volumenSonidos() );
         soundMusicSlider.addListener(new ChangeListener()
         {
             @Override
@@ -111,7 +114,7 @@ public class AjustesScreen implements Screen {
                 Slider slider = (Slider) actor;
 
                 float value = slider.getValue();
-                juego.getPreferencias().setSoundVolume( value );
+                juego.getPreferencias().cambiarVolumenSonidos( value );
             }
         });
         Container<Slider> container2 = new Container<>(soundMusicSlider);
@@ -119,12 +122,13 @@ public class AjustesScreen implements Screen {
         container2.size(400, 100);
 
         final CheckBox soundEffectsCheckbox = new CheckBox(null, juego.manager.managerJuego.get(ConstantesJuego.NOMBRE_JSON_SKIN, Skin.class));
-        soundEffectsCheckbox.setChecked( juego.getPreferencias().isSoundEffectsEnabled() );
+        soundEffectsCheckbox.setChecked( juego.getPreferencias().sonidosActivados() );
+        //Se anade un ChangeListener para que cambiara el activara o desactivara los sonidos
         soundEffectsCheckbox.addListener( new ChangeListener() {
             @Override
             public void changed (ChangeEvent event, Actor actor) {
                 boolean enabled = soundEffectsCheckbox.isChecked();
-                juego.getPreferencias().setSoundEffectsEnabled( enabled );
+                juego.getPreferencias().activarSonidos( enabled );
             }
         });
 
@@ -143,7 +147,7 @@ public class AjustesScreen implements Screen {
         tabla.add(titleLabel).colspan(2);
         tabla.row().pad(10,0,0,10).width(800).height(100);
         tabla.add(volumeMusicLabel);
-        tabla.add(container);
+        tabla.add(containerMusicSlider);
         tabla.row().pad(10,0,0,10).width(800).height(100);
         tabla.add(musicOnOffLabel);
         tabla.add(musicCheckbox);

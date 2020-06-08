@@ -23,6 +23,9 @@ import java.util.UUID;
 
 import static com.daisa.tfg.ServicioBluetooth.EstadosBluetooth.*;
 
+/**
+ * Clase que se encarga de todas las acciones relacionadas con el Bluetooth
+ */
 public class ServicioBluetooth implements Juego.BluetoothCallBack {
 
     final BluetoothAdapter bluetoothAdapter;
@@ -37,6 +40,12 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
 
     boolean esHost;
 
+    /**
+     * @param activity activity de la aplicacion
+     * @param juego objeto usado para cominarse con LIBGDX
+     * @param androidLauncher objeto usado para acceder a los objetos de AndroiLauncher
+     * @param handler objeto usado para la comunicacion entre los hilos y el hilos principal
+     */
     public ServicioBluetooth(Activity activity, Juego juego, AndroidLauncher androidLauncher, Handler handler) {
         this.activity = activity;
         this.juego = juego;
@@ -54,31 +63,6 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         }
 
         estado = NULO;
-    }
-
-    /**
-     * Crea una instancia de HiloConectar para conectarse con un dispositivo.
-     * @param dispositivo dispositivo al que se quiere conectar
-     */
-    public synchronized void conectarDispositivos(BluetoothDevice dispositivo) {
-        esHost = false;
-
-        //Cancela cualquier hilo que quiera crear una nueva conexión
-        if (estado == CONECTANDO) {
-            if (hiloConectar != null) {
-                hiloConectar.cancel();
-                hiloConectar = null;
-            }
-        }
-        //Cancela cualquier hilo que tenga una conexión activa
-        if (hiloConectado != null) {
-            hiloConectado.cancel();
-            hiloConectado = null;
-        }
-
-        hiloConectar = new HiloConectar(dispositivo);
-        hiloConectar.start();
-        estado = CONECTANDO;
     }
 
     //Hilo que se encarga de realizar las conexiones entre los dispositivos (SERVIDOR)
@@ -277,6 +261,31 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
     }
 
     /**
+     * Crea una instancia de HiloConectar para conectarse con un dispositivo.
+     * @param dispositivo dispositivo al que se quiere conectar
+     */
+    public synchronized void conectarDispositivos(BluetoothDevice dispositivo) {
+        esHost = false;
+
+        //Cancela cualquier hilo que quiera crear una nueva conexión
+        if (estado == CONECTANDO) {
+            if (hiloConectar != null) {
+                hiloConectar.cancel();
+                hiloConectar = null;
+            }
+        }
+        //Cancela cualquier hilo que tenga una conexión activa
+        if (hiloConectado != null) {
+            hiloConectado.cancel();
+            hiloConectado = null;
+        }
+
+        hiloConectar = new HiloConectar(dispositivo);
+        hiloConectar.start();
+        estado = CONECTANDO;
+    }
+
+    /**
      * Se crea una instancia de HiloConectado para comenzar la transmision de mensajes.
      * @param socket socket por el que se ha va a realizar la conexion
      * @param dispositivo dispositivo al que se ha conectado
@@ -335,19 +344,12 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         juego.conexionPerdida();
     }
 
-    /**
-     * Crea un ActivityForResult en el que se solicita al usuario que permita el uso del Bluetooth
-     */
     @Override
     public void activityForResultBluetooth() {
         Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         activity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
     }
 
-    /**
-     * Se busca el dispositivo cuyo nombre es el que se ha pulsado en la Screen
-     * @param nombreDispositivo nombre del dispositivo que se ha pulsado
-     */
     @Override
     public void conectarDispositivosBluetooth(String nombreDispositivo) {
         ArrayList<BluetoothDevice> list = new ArrayList<>(androidLauncher.SetDispositivosVisibles);
@@ -361,10 +363,6 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         conectarDispositivos(list.get(pos));
     }
 
-    /**
-     * Crea una activity en la que se pregunta al usuario si quiere que el dispositivo sea descubierto.
-     * A partir de la API 25, se permite descubir al dispositivo sin necesidad de que el usuario lo autorice.
-     */
     @Override
     public void habilitarSerDescubiertoBluetooth() {
         Log.d("DEBUG", "ServicioBluetooth::Se permite que se descubra al dispositivo");
@@ -373,20 +371,12 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         activity.startActivity(intent);
     }
 
-    /**
-     * Comprueba si el Bluetooth esta encendido
-     * @return true si el Bluetooth esta encendido,
-     * false si no
-     */
     @Override
     public boolean bluetoothEncendido() {
         Log.d("DEBUG", "¿Bluetooth Encencido? " + bluetoothAdapter.isEnabled());
         return bluetoothAdapter.isEnabled();
     }
 
-    /**
-     * Comienza a descubrir dispositivos Bluetooth cercanos
-     */
     @Override
     public void descubrirDispositivosBluetooth() {
         Log.d("DEBUG", "ServicioBluetooth::Se comienza a buscar dispositivos");
@@ -401,10 +391,6 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
             Log.d("DEBUG", "ServicioBluetooth::[ERROR] al comenzar la busqueda de dispositivos");
     }
 
-    /**
-     * Se crea una instancia de HiloAceptar en la que se espera que otros dispositivos quieran emparejarse.
-     * Estado pasa a ESCUCHANDO
-     */
     @Override
     public void escucharBluetooth() {
         esHost = true;
@@ -430,11 +416,6 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         estado = ESCUCHANDO;
     }
 
-    /**
-     * Se mandan los datos del mensaje a través de una instancia de HiloConectado.
-     * Solo se envia el mensaje si estamos conectados.
-     * @param mensaje datos que se envian
-     */
     @Override
     public void write(String mensaje) {
         //Se crea una instancia de HiloConectado para mandar el mensaje
@@ -449,10 +430,6 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         hiloConectado.write(mensaje.getBytes());
     }
 
-    /**
-     * Limpia los valores de los dispositivos encontrados previamente y para todos los hilos activos
-     * Estado pasa a NULO
-     */
     @Override
     public void stop() {
         androidLauncher.SetDispositivosVisibles.clear();

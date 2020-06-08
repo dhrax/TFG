@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.badlogic.gdx.utils.Array;
 import com.daisa.tfg.Constantes.ConstantesBluetooth;
+import com.daisa.tfg.Constantes.ConstantesJuego;
 import com.daisa.tfg.Principal.Juego;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -35,7 +36,13 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
     Handler handler;
 	AndroidLauncher androidLauncher;
 
-    public ServicioFirebase(Activity activity, Juego juego, Handler handler, AndroidLauncher androidLauncher) {
+    /**
+     * @param activity activity de la aplicacion
+     * @param juego objeto usado para cominarse con LIBGDX
+     * @param androidLauncher objeto usado para acceder a los objetos de AndroiLauncher
+     * @param handler objeto usado para la comunicacion entre los hilos y el hilos principal
+     */
+    public ServicioFirebase(Activity activity, Juego juego, AndroidLauncher androidLauncher, Handler handler) {
         this.activity = activity;
         this.juego = juego;
         this.handler = handler;
@@ -45,7 +52,7 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
     }
 
     @Override
-    public void comprobacionUsuario(final String nombreUsuario, final String contrasena) {
+    public void comprobacionUsuario(final String nombreUsuario, final String contrasena, final Juego.Procedencia procedencia) {
         db.collection("usuarios")
                 .whereEqualTo("nombre", nombreUsuario)
                 .get()
@@ -53,78 +60,34 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            if (task.getResult().size() >= 1) {
-                                comprobarUsuarioContrasena(nombreUsuario, contrasena);
-                            } else {
-                                pintarToast("Usuario no encontrado");
+                            if(procedencia == Juego.Procedencia.LOGIN_SCREEN){
+                                if (task.getResult().size() >= 1)
+                                    comprobarUsuarioContrasena(nombreUsuario, contrasena);
+                                else
+                                    pintarToast("Usuario no encontrado");
+                            }else{
+                                if (task.getResult().size() >= 1)
+                                    pintarToast("El nombre de usuario ya existe");
+                                else
+                                    if (controlesNombreUsuario(nombreUsuario) && !controlesContrasena(contrasena))
+                                        registrarUsuario(nombreUsuario, contrasena);
                             }
+
                         } else {
                             Log.d("DEBUG", "[ERROR] Tarea comprobacionUsuario no finalizada");
-                            Log.d("DEBUG", "Error getting documents: ", task.getException());
+                            Log.d("DEBUG", "[ERROR] al recuperar los documentos: ", task.getException());
                         }
                     }
                 });
-    }
-
-    private void comprobarUsuarioContrasena(final String nombreUsuario, String contrasena) {
-        db.collection("usuarios")
-                .whereEqualTo("nombre", nombreUsuario)
-                .whereEqualTo("contrasena", contrasena)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            if (task.getResult().size() >= 1) {
-                                juego.irAMenuPrincipal();
-                                juego.setNombreUsuario(nombreUsuario);
-                            } else {
-                                pintarToast("Contraseña incorrecta");
-                                //todo llamar al show de LoginScreen
-                            }
-                        } else {
-                            Log.d("DEBUG", "[ERROR] Tarea comprobarUsuarioContrasena no finalizada");
-                            Log.d("DEBUG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
-
     }
 
     @Override
     public void pintarToast(String mensaje) {
         Message msg = handler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
         Bundle bundle = new Bundle();
-        bundle.putString("toast", mensaje);
+        bundle.putString(ConstantesBluetooth.TOAST, mensaje);
         msg.setData(bundle);
         handler.sendMessage(msg);
-    }
-
-
-    @Override
-    public void usuarioYaExiste(final String nombreUsuario, final String contrasena) {
-
-        db.collection("usuarios")
-                .whereEqualTo("nombre", nombreUsuario)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            if (task.getResult().size() >= 1) {
-                                pintarToast("El nombre de usuario ya existe");
-                            } else {
-                                if (controlesNombreUsuario(nombreUsuario) && !controlesContrasena(contrasena)) {
-                                    registrarUsuario(nombreUsuario, contrasena);
-                                }
-                            }
-                        } else {
-                            Log.d("DEBUG", "[ERROR] Tarea usuarioYaExiste no finalizada");
-                            Log.d("DEBUG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
-
     }
 
     @Override
@@ -151,6 +114,11 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
 
     }
 
+    /**
+     * Se encarga de comprobar que el nombreusuario cumple con los requisitos minimos
+     * @param nombreUsuario nombre que se quiere comprobar
+     * @return true si se cumplen los requisitos, false si no
+     */
     private boolean controlesNombreUsuario(String nombreUsuario) {
         boolean correcto = true;
         if (nombreUsuario.length() < 5 || nombreUsuario.length() > 15) {
@@ -170,6 +138,11 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
         return correcto;
     }
 
+    /**
+     * Se encarga de comprobar que la contrasena cumple con los requisitos minimos
+     * @param contrasena contrasena que se quiere comprobar
+     * @return true si se cumplen los requisitos, false si no
+     */
     private boolean controlesContrasena(String contrasena) {
         boolean hayError = false;
         if (contrasena.length() < 5 || contrasena.length() > 10) {
@@ -192,6 +165,38 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
         return hayError;
     }
 
+    /**
+     * Se comprueba que la contraseña pertenece al nombre de usuario
+     * @param nombreUsuario nombre de usuario
+     * @param contrasena contraseña que se quiere comprobar
+     */
+    private void comprobarUsuarioContrasena(final String nombreUsuario, String contrasena) {
+        db.collection("usuarios")
+                .whereEqualTo("nombre", nombreUsuario)
+                .whereEqualTo("contrasena", contrasena)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            if (task.getResult().size() >= 1) {
+                                juego.irAMenuPrincipal();
+                                juego.setNombreUsuario(nombreUsuario);
+                            } else
+                                pintarToast("Contraseña incorrecta");
+                        } else {
+                            Log.d("DEBUG", "[ERROR] Tarea comprobarUsuarioContrasena no finalizada");
+                            Log.d("DEBUG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Se inserta un nuevo usuario en la BBDD
+     * @param nombreUsuario usuario que se quiere registrar
+     * @param contrasena contrasena del usuario
+     */
     private void registrarUsuario(final String nombreUsuario, String contrasena) {
 
         registrarUsuarioEnPuntuaciones(nombreUsuario);
@@ -218,6 +223,10 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                 });
     }
 
+    /**
+     * Se anade el usuario en la coleccion de Puntuaciones cuando se registre
+     * @param nombreUsuario usuario a insertar
+     */
     public void registrarUsuarioEnPuntuaciones (final String nombreUsuario){
 
         Map<String, Object> usuarioNuevo = new HashMap<>();
@@ -240,6 +249,11 @@ public class ServicioFirebase implements Juego.FirebaseCallBack {
                 });
     }
 
+    /**
+     * Se actualiza la puntuacion del usuario en la BBDD
+     * @param nombreUsuario usuario del que se modifica la puntuacion
+     * @param miPuntuacion nueva puntuacion del usuario
+     */
     public void guardarPuntuacionBBDD(final String nombreUsuario, final int miPuntuacion) {
         db.collection("puntuaciones")
                 .whereEqualTo("nombre", nombreUsuario)
