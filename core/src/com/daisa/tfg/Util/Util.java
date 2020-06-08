@@ -9,10 +9,10 @@ import com.badlogic.gdx.utils.Array;
 
 public class Util {
 
-    public static Array<TextureRegion> listFilesForFolder(final FileHandle folder) {
+    public static Array<TextureRegion> ficherosEnDirectorio(final FileHandle directorio) {
         Array<TextureRegion> temp = new Array<>();
-        for (FileHandle entry : folder.list())
-            temp.add(new TextureRegion(new Sprite(new Texture(Gdx.files.internal(entry.path())))));
+        for (FileHandle fileHandle : directorio.list())
+            temp.add(new TextureRegion(new Sprite(new Texture(Gdx.files.internal(fileHandle.path())))));
 
         return temp;
     }

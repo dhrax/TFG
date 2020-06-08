@@ -33,4 +33,6 @@ public class ConstantesJuego {
 
     public static String IMAGEN_LOGO = "Logo/logo.png";
     public static String IMAGEN_EXCLAMACION = "Signos/signoExclamacion.png";
+
+    public static String SEPARADOR_DATOS = ":";
 }

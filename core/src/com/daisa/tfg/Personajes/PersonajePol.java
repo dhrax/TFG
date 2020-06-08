@@ -4,10 +4,12 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Clase que hereda de Personaje y le anade un poligono de hitbox
+ */
 public class PersonajePol extends Personaje {
     Polygon pol;
     float[] arrVertices;
-
 
     public PersonajePol(Array<String> rutaAnimaciones, int idPj, int vida, float velocidad) {
         super(rutaAnimaciones, idPj, vida, velocidad);
@@ -28,6 +30,9 @@ public class PersonajePol extends Personaje {
         pol.setVertices(arrVertices);
     }
 
+    /**
+     * Obtiene la posicion actual de los vertices del poligono
+     */
     private void getVertices() {
         switch (getIdPj()) {
             case 1:

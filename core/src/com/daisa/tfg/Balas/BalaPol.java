@@ -6,6 +6,9 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Clase que hereda de Bala a la que le anade un poligono como hitbox
+ */
 public class BalaPol extends Bala {
 
     Polygon pol;
@@ -14,7 +17,7 @@ public class BalaPol extends Bala {
     public BalaPol(Vector2 posicion, float velocidad, Array<TextureRegion> aspecto, int idPj, int tamanoBala) {
         super(posicion, velocidad, aspecto, idPj, tamanoBala);
         switch (idPj) {
-            //Trinagulo
+            //Triangulo
             case 3:
                 arrVertices = new float[]{posicion.x, posicion.y,
                         posicion.x + getAnchoRelativoAspecto() * 0.5f, posicion.y + getAltoRelativoAspecto(),

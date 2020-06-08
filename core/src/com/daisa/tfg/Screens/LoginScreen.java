@@ -42,9 +42,6 @@ public class LoginScreen implements Screen {
 
     public LoginScreen(Juego juego) {
         this.juego = juego;
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        Gdx.app.debug("DEBUG", "Ancho: " + Gdx.graphics.getWidth());
-        Gdx.app.debug("DEBUG", "Alto: " + Gdx.graphics.getHeight());
     }
 
     @Override
@@ -144,7 +141,7 @@ public class LoginScreen implements Screen {
                     show();
                 }
                 else {
-                    juego.comprobacionUsuarioLIBGDX(tfNombreUsuario.getText(), tfContraseñaUsuario.getText());
+                    juego.comprobacionUsuarioLIBGDX(tfNombreUsuario.getText(), tfContraseñaUsuario.getText(), Juego.Procedencia.LOGIN_SCREEN);
                 }
             }
         });

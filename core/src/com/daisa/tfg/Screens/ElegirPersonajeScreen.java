@@ -1,6 +1,5 @@
 package com.daisa.tfg.Screens;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
@@ -13,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -39,9 +37,11 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
         this.juego = juego;
         inicializar();
         mostrando = 0;
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-        gestosProcesador = new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DirectionListener() {
+        /**
+         * Objeto que nos permite implementar el deslizamiento sobre la pantalla
+         */
+        gestosProcesador = new SimpleDirectionGestureDetector(new SimpleDirectionGestureDetector.DireccionListener() {
 
             @Override
             public void onUp() {
@@ -76,6 +76,9 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
         esperando = false;
     }
 
+    /**
+     * Inicializa los arraysde texturas para mostrar los personajes
+     */
     private void inicializar() {
         for (int i = 0; i < 10; i++) {
             regionsPequenos.add(new Image(new Texture(Gdx.files.internal("Personajes/Personajes Peques/p" + (i + 1) + ".png"))));
@@ -92,6 +95,9 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
         }
     }
 
+    /**
+     * Cambia la musica que se esta reproduciendo
+     */
     private void cambiarMusica() {
         if(juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class).isPlaying()){
             juego.manager.managerJuego.get(ConstantesJuego.MUSICA_MENU, Music.class).stop();
@@ -150,6 +156,7 @@ public class ElegirPersonajeScreen implements Screen, InputProcessor {
         }
 
         if (!esperando) {
+            //Objeto que nos permite aplicar varios InpputProcessor sobre un mismo objeto
             InputMultiplexer inputMultiplexer = new InputMultiplexer(gestosProcesador, stage);
             Gdx.input.setInputProcessor(inputMultiplexer);
         }else{

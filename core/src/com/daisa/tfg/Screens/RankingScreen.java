@@ -74,6 +74,10 @@ public class RankingScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Se refrescan las puntuaciones
+     * @param ranking ranking con las puntuaciones actualizadas
+     */
     public void refrescarLista(Array<String> ranking) {
         this.puntuaciones = ranking;
         Gdx.app.postRunnable(new Runnable() {

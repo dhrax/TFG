@@ -9,6 +9,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Clase que hereda de Bala a la que le anade un circulo como hitbox
+ */
 public class BalaCirc extends Bala{
 
     Circle circ;
@@ -16,6 +19,5 @@ public class BalaCirc extends Bala{
     public BalaCirc(Vector2 posicion, float velocidad, Array<TextureRegion> aspecto, int idPj, int tamanoBala) {
         super(posicion, velocidad, aspecto, idPj, tamanoBala);
         circ= new Circle(posicion.x + getAnchoRelativoAspecto()/2, posicion.y + getAltoRelativoAspecto()/2, getAltoRelativoAspecto()/2);
-        Gdx.app.debug("DEBUG", "Posicion Circ Bala: " + circ.toString());
     }
 }

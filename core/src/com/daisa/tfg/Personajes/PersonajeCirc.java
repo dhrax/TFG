@@ -5,6 +5,9 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Clase que hereda de Personaje y le anade un circulo de hitbox
+ */
 public class PersonajeCirc extends Personaje {
 
     Circle circ;

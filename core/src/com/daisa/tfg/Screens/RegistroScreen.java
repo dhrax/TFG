@@ -67,7 +67,7 @@ public class RegistroScreen implements Screen {
         Image imgExclamacion2 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
         Image imgExclamacion3 = new Image(new Texture(Gdx.files.internal("Signos/signoExclamacion.png")));
 
-        CharSequence nombUsuario = "Nombre:";
+        CharSequence nombUsuario = "Nombre";
         lbNombre = new Label(nombUsuario, juego.manager.getEstiloLabel());
         lbNombre.setFontScale(2);
 
@@ -164,13 +164,13 @@ public class RegistroScreen implements Screen {
                 }
 
                 if (!tfContraUsuario.getText().equals(tfContraUsuarioRepe.getText())){
-                    juego.crearToast("Las contraseñas no coinciden");
+                    juego.crearToastLIBGDX("Las contraseñas no coinciden");
                     nombAlmacenado = tfNombUsuario.getText();
                     contraAlmacenada = tfContraUsuario.getText();
                     contraAlmacenadaRepe = tfContraUsuarioRepe.getText();
                     show();
                 }else{
-                    juego.usuarioYaExisteLIBGDX(tfNombUsuario.getText(), tfContraUsuario.getText());
+                    juego.comprobacionUsuarioLIBGDX(tfNombUsuario.getText(), tfContraUsuario.getText(), Juego.Procedencia.REGISTRO_SCREEN);
                 }
             }
         });

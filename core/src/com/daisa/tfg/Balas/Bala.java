@@ -17,6 +17,9 @@ import com.daisa.tfg.Personajes.PersonajePol;
 
 import java.lang.reflect.Field;
 
+/**
+ * Clase abstracta que contiene todos los atributos (menos el hitbox) de las balas
+ */
 public abstract class Bala {
 
     private Vector2 posicion;
@@ -34,13 +37,19 @@ public abstract class Bala {
     Array<TextureRegion> arrayTexturas;
     private float stateTime;
 
+    /**
+     * @param posicion posicion X e Y donde va a generarse la bala
+     * @param velocidad velocidad a la que se mueve la bala
+     * @param arrayTexturas texturas de la animacion de la bala
+     * @param idPj id deljugador que ha generado la bala
+     * @param tamanoBala tamano con el que se va a pintar la bala
+     */
     public Bala(Vector2 posicion, float velocidad, Array<TextureRegion> arrayTexturas, int idPj, int tamanoBala) {
         this.posicion = posicion;
         this.velocidad = velocidad;
         this.arrayTexturas = arrayTexturas;
         this.idPj = idPj;
 
-        //todo mejorar
         relacionAspecto = (float) this.arrayTexturas.get(0).getRegionWidth() / this.arrayTexturas.get(0).getRegionHeight();
         animation = new Animation(0.2f, arrayTexturas);
 
@@ -50,6 +59,7 @@ public abstract class Bala {
         this.tamanoBala = tamanoBala;
     }
 
+    //Getters
     public Vector2 getPosicion() {
         return posicion;
     }
@@ -74,10 +84,18 @@ public abstract class Bala {
         return idPj;
     }
 
+    /**
+     * Pinta la bala on el tamano escalado
+     * @param batch objeto para pintar en pantalla
+     */
     public void pintar(SpriteBatch batch) {
         batch.draw(aspecto, posicion.x, posicion.y, anchoRelativoAspecto, altoRelativoAspecto);
     }
 
+    /**
+     * Actualiza la textura que hay que pintar
+     * @param delta deltaTime del juego
+     */
     public void actualizarFrame(float delta) {
         stateTime += delta;
         aspecto = (TextureRegion) animation.getKeyFrame(stateTime, true);
@@ -90,6 +108,107 @@ public abstract class Bala {
         return posicion.x * 100 / ConstantesJuego.ANCHO_PANTALLA;
     }
 
+    /**
+     * Obtiene el rectangulo de la bala
+     * @param bala bala de la que se quiere obtener el hitbox
+     * @return devuelve el rectanguo o null si ha habido algun fallo
+     */
+    public Rectangle obtenerRectanguloBala(Bala bala) {
+        return obtenerRectangulo(bala);
+    }
+
+    /**
+     * Obtiene el rectangulo del objeto
+     * @param object objeto de la que se quiere obtener el hitbox
+     * @return devuelve el rectanguo o null si ha habido algun fallo
+     */
+    public Rectangle obtenerRectangulo(Object object) {
+        try {
+            Field field = object.getClass().getDeclaredField("rect");
+            field.setAccessible(true);
+            return (Rectangle) field.get(object);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Gdx.app.debug("DEBUG", "[ERROR Rectangulo] " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene el poligono de la bala
+     * @param bala bala de la que se quiere obtener el hitbox
+     * @return devuelve el poligono o null si ha habido algun fallo
+     */
+    public Polygon obtenerPoligonoBala(Bala bala) {
+        return obtenerPoligono(bala);
+    }
+
+    /**
+     * Obtiene el poligono del personaje
+     * @param personaje personaje del que se quiere obtener el hitbox
+     * @return devuelve el poligono o null si ha habido algun fallo
+     */
+    Polygon obtenerPoligonoPersonaje(Personaje personaje) {
+        return obtenerPoligono(personaje);
+    }
+
+    /**
+     * Obtiene el poligono del objeto
+     * @param object objeto del que se quiere obtener el hitbox
+     * @return devuelve el poligono o null si ha habido algun fallo
+     */
+    protected Polygon obtenerPoligono(Object object) {
+        Field field;
+        try {
+            field = object.getClass().getDeclaredField("pol");
+            field.setAccessible(true);
+            return (Polygon) field.get(object);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Gdx.app.debug("DEBUG", "[ERROR Poligono] " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene el circulo de la bala
+     * @param bala bala de la que se quiere obtener el hitbox
+     * @return devuelve el circulo o null si ha habido algun fallo
+     */
+    public Circle obtenerCirculoBala(Bala bala) {
+        return obtenerCirculo(bala);
+    }
+
+    /**
+     * Obtiene el circulo del personaje
+     * @param personaje personaje del que se quiere obtener el hitbox
+     * @return devuelve el circulo o null si ha habido algun fallo
+     */
+    Circle obtenerCirculoPersonaje(Personaje personaje) {
+        return obtenerCirculo(personaje);
+    }
+
+    /**
+     * Obtiene el circulo del objeto
+     * @param object objeto del que se quiere obtener el hitbox
+     * @return devuelve el circulo o null si ha habido algun fallo
+     */
+    Circle obtenerCirculo(Object object) {
+        try {
+            Field field = object.getClass().getDeclaredField("circ");
+            field.setAccessible(true);
+            return (Circle) field.get(object);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Gdx.app.debug("DEBUG", "[ERROR Circulo]" + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Comprueba si las balas han chocado
+     * @param bala bala del jugador
+     * @param balaRival bala del rival
+     * @return true si han chocado, false si no.
+     * Se devuele true por defecto para evitar fallos de balas que no se chocan
+     */
     public boolean comprobarColisiones(Bala bala, Bala balaRival) {
         if (bala instanceof BalaRect) {
             Rectangle rect = obtenerRectanguloBala(bala);
@@ -147,7 +266,13 @@ public abstract class Bala {
         }
         return true;
     }
-
+    /**
+     * Comprueba si las balas han chocado con el personaje
+     * @param bala bala del jugador
+     * @param personaje personaje
+     * @return true si han chocado, false si no.
+     * Se devuele true por defecto para evitar fallos de balas que no se chocan
+     */
     public boolean comprobarColisiones(Bala bala, Personaje personaje) {
 
         if (bala instanceof BalaRect) {
@@ -162,7 +287,6 @@ public abstract class Bala {
                     Gdx.app.debug("DEBUG", "Se comprueba colision balaRect personajePol");
                     return chocaRectanguloPoligono(rect, polPersonaje, polPersonaje.getVertices());
                 }
-
             }
 
         } else if (bala instanceof BalaCirc) {
@@ -196,66 +320,18 @@ public abstract class Bala {
                     }
                     return Intersector.overlapConvexPolygons(pol, polPersonaje);
                 }
-
             }
         }
         return true;
     }
 
-    public Rectangle obtenerRectanguloBala(Bala bala) {
-        return obtenerRectangulo(bala);
-    }
-
-    public Rectangle obtenerRectangulo(Object object) {
-        try {
-            Field field = object.getClass().getDeclaredField("rect");
-            field.setAccessible(true);
-            return (Rectangle) field.get(object);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            Gdx.app.debug("DEBUG", "[ERROR Rectangulo] " + e.getMessage());
-        }
-        return null;
-    }
-
-    public Polygon obtenerPoligonoBala(Bala bala) {
-        return obtenerPoligono(bala);
-    }
-
-    Polygon obtenerPoligonoPersonaje(Personaje personaje) {
-        return obtenerPoligono(personaje);
-    }
-
-    protected Polygon obtenerPoligono(Object object) {
-        Field field;
-        try {
-            field = object.getClass().getDeclaredField("pol");
-            field.setAccessible(true);
-            return (Polygon) field.get(object);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            Gdx.app.debug("DEBUG", "[ERROR Poligono] " + e.getMessage());
-        }
-        return null;
-    }
-
-    public Circle obtenerCirculoBala(Bala bala) {
-        return obtenerCirculo(bala);
-    }
-
-    Circle obtenerCirculoPersonaje(Personaje personaje) {
-        return obtenerCirculo(personaje);
-    }
-
-    Circle obtenerCirculo(Object object) {
-        try {
-            Field field = object.getClass().getDeclaredField("circ");
-            field.setAccessible(true);
-            return (Circle) field.get(object);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            Gdx.app.debug("DEBUG", "[ERROR Circulo]" + e.getMessage());
-        }
-        return null;
-    }
-
+    /**
+     * Comprueba si el rectangulo y elpoligono se han tocado
+     * @param rect rectangulo
+     * @param polRival poligono con el que se comprueba si se toca
+     * @param vertices vertices del poligono con que se comprueba si se toca
+     * @return true si se han tocado o el rectangulo esta dentro del poligono, false si no
+     */
     boolean chocaRectanguloPoligono(Rectangle rect, Polygon polRival, float[] vertices) {
         Polygon rPoly = new Polygon(vertices);
         rPoly.setPosition(rect.x, rect.y);
@@ -265,6 +341,12 @@ public abstract class Bala {
         return Intersector.overlapConvexPolygons(rPoly, polRival);
     }
 
+    /**
+     * Comprueba si el circulo y el poligono se han tocado
+     * @param circ circulo
+     * @param pol poligono con el que se comprueba si se toca
+     * @return true si se han tocado o el poligono esta dentro del circulo, false si no
+     */
     boolean chocaCirculoPoligono(Circle circ, Polygon pol) {
         centro.set(circ.x, circ.y);
         float[] vertices = pol.getVertices();
