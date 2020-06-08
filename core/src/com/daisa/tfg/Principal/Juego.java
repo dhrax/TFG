@@ -22,8 +22,6 @@ import com.daisa.tfg.Screens.MenuPrincipalScreen;
 import com.daisa.tfg.Screens.RankingScreen;
 import com.daisa.tfg.Util.JuegoAssetManager;
 
-import java.util.ArrayList;
-
 public class Juego extends Game {
 
     //TODO Cargar todo los managers aquí
@@ -82,7 +80,7 @@ public class Juego extends Game {
     }
 
     public void empezarAEscuchar() {
-        bluetoothCallBack.empezarAEscucharBluetooth();
+        bluetoothCallBack.escucharBluetooth();
     }
 
     public void comenzarPartida() {
@@ -160,7 +158,7 @@ public class Juego extends Game {
         void habilitarSerDescubiertoBluetooth();
         boolean bluetoothEncendido();
         void descubrirDispositivosBluetooth();
-        void empezarAEscucharBluetooth();
+        void escucharBluetooth();
         void write(String string);
         void stop();
     }

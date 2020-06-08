@@ -26,8 +26,8 @@ import static com.daisa.tfg.ServicioBluetooth.EstadosBluetooth.*;
 public class ServicioBluetooth implements Juego.BluetoothCallBack {
 
     final BluetoothAdapter bluetoothAdapter;
-    private final Activity mCurrentActivity;
-    private final Handler mHandler;
+    private final Activity activity;
+    private final Handler handler;
     Juego juego;
     AndroidLauncher androidLauncher;
     EstadosBluetooth estado;
@@ -37,12 +37,11 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
 
     boolean esHost;
 
-
     public ServicioBluetooth(Activity activity, Juego juego, AndroidLauncher androidLauncher, Handler handler) {
-        mCurrentActivity = activity;
+        this.activity = activity;
         this.juego = juego;
         this.androidLauncher = androidLauncher;
-        mHandler = handler;
+        this.handler = handler;
 
         juego.setBluetoothCallBack(this);
 
@@ -50,102 +49,53 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
 
         //Si el adaptador es nulo, significa que no se soporta el Bluetooth
         if (bluetoothAdapter == null) {
-            Toast.makeText(mCurrentActivity, "No se puede jugar sin bluetooth", Toast.LENGTH_LONG).show();
-            return;
+            Toast.makeText(this.activity, "No se puede jugar sin bluetooth", Toast.LENGTH_LONG).show();
+            activity.finish();
         }
 
         estado = NULO;
     }
 
-
-    public void descubirDispositivos(){
-        Log.d("DEBUG", "ServicioBluetooth::Se comienza a buscar dispositivos");
-        if(bluetoothAdapter.isDiscovering()){
-            bluetoothAdapter.cancelDiscovery();
-        }
-        Log.d("DEBUG", String.valueOf(bluetoothAdapter.isEnabled()));
-        if(bluetoothAdapter.startDiscovery()){
-            Log.d("DEBUG", "ServicioBluetooth::Busqueda de dispositivos empezada correctamente");
-        }else{
-            Log.d("DEBUG", "ServicioBluetooth::[ERROR] al comenzar la busqueda de dispositivos");
-
-        }
-    }
-
-    public synchronized void conectarDispositivos(BluetoothDevice bluetoothDevice){
-
+    /**
+     * Crea una instancia de HiloConectar para conectarse con un dispositivo.
+     * @param dispositivo dispositivo al que se quiere conectar
+     */
+    public synchronized void conectarDispositivos(BluetoothDevice dispositivo) {
         esHost = false;
 
+        //Cancela cualquier hilo que quiera crear una nueva conexión
         if (estado == CONECTANDO) {
             if (hiloConectar != null) {
                 hiloConectar.cancel();
                 hiloConectar = null;
             }
         }
-
+        //Cancela cualquier hilo que tenga una conexión activa
         if (hiloConectado != null) {
             hiloConectado.cancel();
             hiloConectado = null;
         }
 
-        hiloConectar = new HiloConectar(bluetoothDevice);
+        hiloConectar = new HiloConectar(dispositivo);
         hiloConectar.start();
         estado = CONECTANDO;
     }
 
-    public void serDescubierto(){
-        Log.d("DEBUG", "ServicioBluetooth::Se permite que se descubra al dispositivo");
-        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
-        mCurrentActivity.startActivity(intent);
-    }
-
-    public EstadosBluetooth getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadosBluetooth estado) {
-        this.estado = estado;
-    }
-
-    public void escuchar() {
-        esHost = true;
-
-        // Cancel any thread attempting to make a connection
-        if (hiloConectar != null) {
-            hiloConectar.cancel();
-            hiloConectar = null;
-        }
-
-        // Cancel any thread currently running a connection
-        if (hiloConectado != null) {
-            hiloConectado.cancel();
-            hiloConectado = null;
-        }
-
-        // Start the thread to listen on a BluetoothServerSocket
-        if (hiloAceptar == null) {
-            hiloAceptar = new HiloAceptar();
-            hiloAceptar.start();
-        }
-
-        estado = ESCUCHANDO;
-    }
-
+    //Hilo que se encarga de realizar las conexiones entre los dispositivos (SERVIDOR)
     private class HiloAceptar extends Thread {
-
-        private final BluetoothServerSocket mmServerSocket;
+        //Socket que permitirá que otros dispositivos se conecten a este
+        private final BluetoothServerSocket serverSocket;
 
         public HiloAceptar() {
-            BluetoothServerSocket tmp = null;
+            BluetoothServerSocket tmpServerSocket = null;
             try {
-
-                tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord("TFG", UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
+                //Se asigna un nombre y un identificador único que permitirá que los dispositivos se conecten
+                tmpServerSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord("TFG", UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
 
             } catch (IOException e) {
                 Log.d("DEBUG", "accept() ha fallado");
             }
-            mmServerSocket = tmp;
+            serverSocket = tmpServerSocket;
         }
 
         @Override
@@ -153,242 +103,253 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
             BluetoothSocket socket;
             while (estado != CONECTADO) {
                 try {
-                    socket = mmServerSocket.accept();
+                    //se bloquea el hilo hasta que se establezca una conexión (o de un error)
+                    socket = serverSocket.accept();
                 } catch (IOException e) {
+                    Log.d("DEBUG", "accept() ha fallado");
                     break;
                 }
-                if (socket != null)
-                {
-                    Log.d("DEBUG", "Connection accepted :" + estado);
+                if (socket != null) {
+                    Log.d("DEBUG", "Conexión aceptada :" + estado);
 
+                    //Se sincroniza para que ningún hilo pueda modificar el socket
                     synchronized (ServicioBluetooth.this) {
                         switch (estado) {
                             case ESCUCHANDO:
                             case CONECTANDO:
-                                // Situation normal. Start the connected thread.
-                                Log.d("DEBUG", "Accept Connecting");
+                                // Comienza el hilo conectado
                                 conectado(socket, socket.getRemoteDevice());
                                 break;
+                            //Si el estado es NULO o CONECTADO, se cierra el socket
                             case NULO:
                             case CONECTADO:
                                 try {
                                     socket.close();
                                 } catch (IOException e) {
+                                    Log.d("DEBUG", "[ERROR] No se ha podido cerrar el socket");
                                 }
                                 break;
                         }
                     }
                     try {
-                        mmServerSocket.close();
+                        //Se cierra el socket para evitar problemas de sincronización
+                        serverSocket.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Log.d("DEBUG", "[ERROR] No se ha podido cerrar el serverSocket");
                     }
-                    break;
-                }
-            }
-            Log.d("DEBUG", "END mAcceptThread");
-
-        }
-
-        public void cancel() {
-            Log.d("DEBUG", "cancel " + this);
-            try {
-                mmServerSocket.close();
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    private class HiloConectar extends Thread {
-
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
-
-        public HiloConectar(BluetoothDevice device) {
-            BluetoothSocket tmp = null;
-            mmDevice = device;
-
-            try {
-                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
-            } catch (IOException e) {
-            }
-            mmSocket = tmp;
-        }
-
-        public void run() {
-            Log.i("DEBUG", "BEGIN mConnectThread");
-
-            // Always cancel discovery because it will slow down a connection
-            bluetoothAdapter.cancelDiscovery();
-
-            try {
-                mmSocket.connect();
-            } catch (IOException connectException) {
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) {
-                    Log.e("DEBUG", "unable to close() socket during connection failure", closeException);
-                }
-                connectionFailed();
-                return;
-            }
-
-            synchronized (ServicioBluetooth.this) {
-                hiloConectar = null;
-            }
-
-            conectado(mmSocket, mmDevice);
-        }
-
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    private class HiloConectado extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-
-        public HiloConectado(BluetoothSocket socket) {
-            mmSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            try {
-                Log.d("DEBUG", "HiloConectado::Se crea el input y el output");
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-            }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
-
-        public void run() {
-            Log.i("DEBUG", "BEGIN mConnectedThread");
-            byte[] buffer = new byte[1024];
-            int bytes;
-
-            while (true) {
-                try {
-                    bytes = mmInStream.read(buffer);
-
-                    mHandler.obtainMessage(ConstantesBluetooth.LEER_MENSAJE, bytes, -1, buffer).sendToTarget();
-                } catch (IOException e) {
-                    connectionLost();
                     break;
                 }
             }
         }
 
         /**
-         * Write to the connected OutStream.
+         * Cierra el socket actual
+         */
+        public void cancel() {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                Log.d("DEBUG", "[ERROR] No se ha podido cerrar el serverSocket");
+            }
+        }
+    }
+
+    //Hilo que se encarga de crear una conexión segura (CLIENTE)
+    private class HiloConectar extends Thread {
+
+        private final BluetoothSocket socket;
+        private final BluetoothDevice bluetoothDevice;
+
+        public HiloConectar(BluetoothDevice device) {
+            BluetoothSocket tmpSocket = null;
+            bluetoothDevice = device;
+
+            try {
+                //Se crea un socket seguro entre los dispositivos mediante el uso de una clave única
+                tmpSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("DDD59690-4FBA-11E2-BCFD-0800200C9A66"));
+            } catch (IOException e) {
+                Log.d("DEBUG", "[ERROR] No se puede crear una conexión segura entre los dispositivos");
+            }
+            socket = tmpSocket;
+        }
+
+        public void run() {
+
+            //Siempre hay que cancelar el descubrimiento de nuevos dispositivos porque ralentizaría la conexión
+            //Fuente: Android Docs
+            bluetoothAdapter.cancelDiscovery();
+
+            try {
+                socket.connect();
+            } catch (IOException connectException) {
+                try {
+                    socket.close();
+                } catch (IOException closeException) {
+                    Log.d("DEBUG", "[ERROR] No se ha podido cerrar el socket");
+                }
+                conexiónFallida();
+                return;
+            }
+
+            //Se resetea el hilo porque ya se ha establecido la conexión entre dispositivos
+            synchronized (ServicioBluetooth.this) {
+                hiloConectar = null;
+            }
+
+            conectado(socket, bluetoothDevice);
+        }
+
+        /**
+         * Cierra el socket actual
+         */
+        public void cancel() {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                Log.d("DEBUG", "[ERROR] No se ha podido cerrar el socket");
+            }
+        }
+    }
+
+    //Hilo que se encarga de la transmisión de mensajes entre los dispositivos
+    private class HiloConectado extends Thread {
+        private final BluetoothSocket socket;
+        private final InputStream inputStream;
+        private final OutputStream outputStream;
+
+        public HiloConectado(BluetoothSocket socket) {
+            this.socket = socket;
+            InputStream tmpInputStream = null;
+            OutputStream tmpOutputStream = null;
+
+            try {
+                Log.d("DEBUG", "HiloConectado::Se crea el input y el output");
+                tmpInputStream = this.socket.getInputStream();
+                tmpOutputStream = this.socket.getOutputStream();
+            } catch (IOException e) {
+                Log.d("DEBUG", "[ERROR] No se ha podido crear el input o el output");
+            }
+
+            inputStream = tmpInputStream;
+            outputStream = tmpOutputStream;
+        }
+
+        public void run() {
+            byte[] buffer = new byte[1024];
+            int bytes;
+
+            while (true) {
+                try {
+                    //Se leen los datos del inputStream
+                    bytes = inputStream.read(buffer);
+                    //Se envían esos datos al hilo principal
+                    handler.obtainMessage(ConstantesBluetooth.LEER_MENSAJE, bytes, -1, buffer).sendToTarget();
+                } catch (IOException e) {
+                    conexionPerdida();
+                    break;
+                }
+            }
+        }
+
+        /**
+         * Envía los datos a través del outputStream
          *
-         * @param buffer The bytes to write
+         * @param buffer datos a enviar
          */
         public void write(byte[] buffer) {
             try {
-                mmOutStream.write(buffer);
+                outputStream.write(buffer);
             } catch (IOException e) {
-                Log.e("DEBUG", "Exception during write", e);
+                Log.d("DEBUG", "[ERROR] No se ha podido enviar el mensaje");
             }
         }
 
+        /**
+         * Cierra el socket actual
+         */
         public void cancel() {
             try {
-                mmSocket.close();
+                socket.close();
             } catch (IOException e) {
-                Log.e("DEBUG", "close() of connect socket failed", e);
+                Log.d("DEBUG", "[ERROR] No se ha podido cerrar el socket");
             }
         }
     }
 
-    private synchronized void conectado(BluetoothSocket socket,
-                                        BluetoothDevice device) {
-        if (hiloConectar != null) {
-            hiloConectar.cancel();
-            hiloConectar = null;
-        }
+    /**
+     * Se crea una instancia de HiloConectado para comenzar la transmision de mensajes.
+     * @param socket socket por el que se ha va a realizar la conexion
+     * @param dispositivo dispositivo al que se ha conectado
+     */
+    private synchronized void conectado(BluetoothSocket socket, BluetoothDevice dispositivo) {
+        pararHilosActivos();
 
-        if (hiloConectado != null) {
-            hiloConectado.cancel();
-            hiloConectado = null;
-        }
-
-        if (hiloAceptar != null) {
-            hiloAceptar.cancel();
-            hiloAceptar = null;
-        }
-
-        Log.d("DEBUG", "ServicioBluetooth::Dentro de la función conectado");
-
-        Log.d("DEBUG", "ServicioBluetooth::Se crea HiloConectado");
+        //Se crea el hilo para la transmisión de mensajes
         hiloConectado = new HiloConectado(socket);
         hiloConectado.start();
 
-        Log.d("DEBUG", "ServicioBluetooth::Se envia mensaje del dispositivo al que se ha conectado");
-        Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO);
+        conexionRealizada(dispositivo.getName());
+    }
+
+    /**
+     * Se comunica al hilo principal el dispositivo con el que se ha realizado la conexion.
+     * Estado pasa a CONECTADO
+     * @param nombreDispositivo dispositivo al que se ha conectado
+     */
+    public void conexionRealizada(String nombreDispositivo){
+        Message msg = handler.obtainMessage(ConstantesBluetooth.MENSAJE_NOMBRE_DISPOSITIVO);
         Bundle bundle = new Bundle();
-        bundle.putString(UtilAndroid.NOMBRE_DISPOSITIVO, device.getName());
+        bundle.putString(ConstantesBluetooth.NOMBRE_DISPOSITIVO, nombreDispositivo);
         msg.setData(bundle);
-        mHandler.sendMessage(msg);
-
-
+        handler.sendMessage(msg);
         estado = CONECTADO;
     }
 
-    private void connectionLost() {
-        // Send a failure message back to the Activity
-        Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
+    /**
+     * Comunica al hilo principal que se ha perdido la conexión con el dispositivo al que se había conectado.
+     * Estado pasa a NULO
+     */
+    private void conexionPerdida() {
+        Message msg = handler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
         Bundle bundle = new Bundle();
-        bundle.putString("toast", "El rival se ha desconectado");
+        bundle.putString(ConstantesBluetooth.TOAST, "El rival se ha desconectado");
         msg.setData(bundle);
-        mHandler.sendMessage(msg);
+        handler.sendMessage(msg);
 
         estado = NULO;
         juego.rivalDesconectado();
     }
 
-    public void write(byte[] out) {
-        // Create temporary object
-        HiloConectado r;
-        // Synchronize a copy of the ConnectedThread
-        synchronized (this) {
-            if (estado != EstadosBluetooth.CONECTADO) return;
-            r = hiloConectado;
-        }
-        // Perform the write unsynchronized
-        r.write(out);
-    }
-
-    private void connectionFailed() {
-
-        Message msg = mHandler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
+    /**
+     * Comunica al hilo principal para indicar que ha habido un fallo durante la conexión entre los dispositivos.
+     * Estado pasa a NULO
+     */
+    private void conexiónFallida() {
+        Message msg = handler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
         Bundle bundle = new Bundle();
-        bundle.putString("toast", "Unable to connect device");
+        bundle.putString(ConstantesBluetooth.TOAST, "Error al conectar dispositivos");
         msg.setData(bundle);
-        mHandler.sendMessage(msg);
+        handler.sendMessage(msg);
 
         estado = NULO;
-
         juego.conexionPerdida();
     }
 
+    /**
+     * Crea un ActivityForResult en el que se solicita al usuario que permita el uso del Bluetooth
+     */
     @Override
     public void activityForResultBluetooth() {
         Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        mCurrentActivity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
+        activity.startActivityForResult(enableIntent, ConstantesBluetooth.SOLICITAR_BLUETOOTH);
     }
 
+    /**
+     * Se busca el dispositivo cuyo nombre es el que se ha pulsado en la Screen
+     * @param nombreDispositivo nombre del dispositivo que se ha pulsado
+     */
     @Override
     public void conectarDispositivosBluetooth(String nombreDispositivo) {
-        Log.d("DEBUG", "AndroidLauncher::Se está buscando el dispositivo pulsado");
-
         ArrayList<BluetoothDevice> list = new ArrayList<>(androidLauncher.SetDispositivosVisibles);
 
         int pos = -1;
@@ -400,60 +361,131 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
         conectarDispositivos(list.get(pos));
     }
 
+    /**
+     * Crea una activity en la que se pregunta al usuario si quiere que el dispositivo sea descubierto.
+     * A partir de la API 25, se permite descubir al dispositivo sin necesidad de que el usuario lo autorice.
+     */
     @Override
     public void habilitarSerDescubiertoBluetooth() {
-        serDescubierto();
+        Log.d("DEBUG", "ServicioBluetooth::Se permite que se descubra al dispositivo");
+        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
+        activity.startActivity(intent);
     }
 
+    /**
+     * Comprueba si el Bluetooth esta encendido
+     * @return true si el Bluetooth esta encendido,
+     * false si no
+     */
     @Override
     public boolean bluetoothEncendido() {
         Log.d("DEBUG", "¿Bluetooth Encencido? " + bluetoothAdapter.isEnabled());
         return bluetoothAdapter.isEnabled();
     }
 
+    /**
+     * Comienza a descubrir dispositivos Bluetooth cercanos
+     */
     @Override
     public void descubrirDispositivosBluetooth() {
-        descubirDispositivos();
+        Log.d("DEBUG", "ServicioBluetooth::Se comienza a buscar dispositivos");
+        //Se cancelan todas las busquedas activas
+        if (bluetoothAdapter.isDiscovering())
+            bluetoothAdapter.cancelDiscovery();
+
+        //Se comprueba si se ha empezado a descubrir dispositivos correctamente
+        if (bluetoothAdapter.startDiscovery())
+            Log.d("DEBUG", "ServicioBluetooth::Busqueda de dispositivos empezada correctamente");
+        else
+            Log.d("DEBUG", "ServicioBluetooth::[ERROR] al comenzar la busqueda de dispositivos");
     }
 
+    /**
+     * Se crea una instancia de HiloAceptar en la que se espera que otros dispositivos quieran emparejarse.
+     * Estado pasa a ESCUCHANDO
+     */
     @Override
-    public void empezarAEscucharBluetooth() {
-        escuchar();
-    }
+    public void escucharBluetooth() {
+        esHost = true;
 
-    @Override
-    public void write(String string) {
-        write(string.getBytes());
-    }
-
-    @Override
-    public void stop() {
-        androidLauncher.SetDispositivosVisibles.clear();
-        AndroidLauncher.nombreDispositivosVisibles.clear();
-        pararHilos();
-    }
-
-    //TODO LLAMARLO EN EL SCREEN CADA VEZ QUE SE PULSA UN BOTON
-    public synchronized void
-    pararHilos() {
+        //Cancela cualquier hilo que quiera crear una nueva conexión
         if (hiloConectar != null) {
             hiloConectar.cancel();
             hiloConectar = null;
         }
+
+        //Cancela cualquier hilo que tenga una conexión activa
         if (hiloConectado != null) {
             hiloConectado.cancel();
             hiloConectado = null;
         }
+
+        //Empieza un hilo a escucha en el BluetoothServerSocket
+        if (hiloAceptar == null) {
+            hiloAceptar = new HiloAceptar();
+            hiloAceptar.start();
+        }
+
+        estado = ESCUCHANDO;
+    }
+
+    /**
+     * Se mandan los datos del mensaje a través de una instancia de HiloConectado.
+     * Solo se envia el mensaje si estamos conectados.
+     * @param mensaje datos que se envian
+     */
+    @Override
+    public void write(String mensaje) {
+        //Se crea una instancia de HiloConectado para mandar el mensaje
+        HiloConectado hiloConectado;
+
+        synchronized (this) {
+            if (estado != EstadosBluetooth.CONECTADO)
+                return;
+            hiloConectado = this.hiloConectado;
+        }
+        //Se envía el mensaje asíncronamente
+        hiloConectado.write(mensaje.getBytes());
+    }
+
+    /**
+     * Limpia los valores de los dispositivos encontrados previamente y para todos los hilos activos
+     * Estado pasa a NULO
+     */
+    @Override
+    public void stop() {
+        androidLauncher.SetDispositivosVisibles.clear();
+        AndroidLauncher.nombreDispositivosVisibles.clear();
+        pararHilosActivos();
+        estado = NULO;
+    }
+
+    /**
+     * Para todos los hilos activos
+     */
+    public synchronized void pararHilosActivos() {
+        //Cancela cualquier hilo que quiera crear una nueva conexión
+        if (hiloConectar != null) {
+            hiloConectar.cancel();
+            hiloConectar = null;
+        }
+        //Cancela cualquier hilo que tenga una conexión activa
+        if (hiloConectado != null) {
+            hiloConectado.cancel();
+            hiloConectado = null;
+        }
+        //Cancela cualquier hilo que este esperando una nueva conexion
         if (hiloAceptar != null) {
             hiloAceptar.cancel();
             hiloAceptar = null;
         }
-        estado = NULO;
     }
 
-    public enum EstadosBluetooth{
+    /**
+     * Estados de la conexión Bluetooth
+     */
+    public enum EstadosBluetooth {
         CONECTADO, CONECTANDO, ESCUCHANDO, NULO
     }
-
-
 }
