@@ -358,6 +358,4 @@ public abstract class Bala {
                 return true;
         return pol.contains(circ.x, circ.y);
     }
-
-
 }

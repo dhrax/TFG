@@ -48,6 +48,9 @@ project(":core") {
         api "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.0"
         api "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
         api "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
+
+        api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+
         //implementation 'com.google.firebase:firebase-database:16.0.4'
         //implementation 'com.google.firebase:firebase-admin:6.8.1'
         implementation 'com.google.firebase:firebase-analytics:17.3.0'

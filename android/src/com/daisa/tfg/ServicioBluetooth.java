@@ -171,7 +171,7 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
                 } catch (IOException closeException) {
                     Log.d("DEBUG", "[ERROR] No se ha podido cerrar el socket");
                 }
-                conexiónFallida();
+                conexionFallida();
                 return;
             }
 
@@ -333,7 +333,7 @@ public class ServicioBluetooth implements Juego.BluetoothCallBack {
      * Comunica al hilo principal para indicar que ha habido un fallo durante la conexión entre los dispositivos.
      * Estado pasa a NULO
      */
-    private void conexiónFallida() {
+    private void conexionFallida() {
         Message msg = handler.obtainMessage(ConstantesBluetooth.MENSAJE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(ConstantesBluetooth.TOAST, "Error al conectar dispositivos");
